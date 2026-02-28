@@ -1,0 +1,35 @@
+random_seed: 42
+test_size: 0.2
+target_column: Dropout
+risk_bins:
+  low_max: 33
+  medium_max: 66
+important_features_top_k: 5
+numerical_features:
+  - Age
+  - Family_Income
+  - Study_Hours_per_Day
+  - Attendance_Rate
+  - Assignment_Delay_Days
+  - Travel_Time_Minutes
+  - Stress_Index
+  - GPA
+  - Semester_GPA
+  - CGPA
+  - session_count
+  - avg_time_spent_minutes
+  - avg_pages_visited
+  - avg_video_watched_percent
+  - avg_click_events
+  - avg_attention_score
+  - avg_days_since_last_activity
+  - success_rate
+  - sentiment_score
+categorical_features:
+  - Gender
+  - Internet_Access
+  - Part_Time_Job
+  - Scholarship
+  - Semester
+  - Department
+  - Parental_Education

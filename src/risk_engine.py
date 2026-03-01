@@ -39,6 +39,15 @@ INTERVENTION_RULES: List[Tuple[List[str], str]] = [
      "Proactive outreach — schedule regular check-ins with mentor"),
 ]
 
+DISENGAGEMENT_RULES: List[Tuple[List[str], str]] = [
+    (["attendance"], "Attendance decline"),
+    (["assignment_delay", "delay", "assignment_completion"], "Assignment delay pattern"),
+    (["study_hours", "gpa", "cgpa", "semester_gpa"], "Academic performance pressure"),
+    (["time_spent", "pages_visited", "video_watched", "click_events", "attention_score"], "Low LMS engagement"),
+    (["days_since_last", "session_count", "success_rate"], "Irregular activity pattern"),
+    (["stress", "sentiment"], "Emotional distress signal"),
+]
+
 
 # ---------------------------------------------------------------------------
 # Risk scoring
@@ -128,6 +137,26 @@ def recommend_intervention(triggers: str, risk_level: str) -> str:
     return "General academic-support check-in"
 
 
+def derive_disengagement_indicators(triggers: str, top_n: int = 2) -> str:
+    """Map trigger text into compact academic disengagement indicator labels."""
+    trigger_list = [t.strip().lower() for t in triggers.split(",") if t.strip()]
+    indicators: List[str] = []
+
+    for trigger in trigger_list:
+        for keywords, label in DISENGAGEMENT_RULES:
+            if any(kw in trigger for kw in keywords):
+                if label not in indicators:
+                    indicators.append(label)
+                break
+        if len(indicators) >= top_n:
+            break
+
+    if not indicators:
+        indicators.append("General engagement fluctuation")
+
+    return ", ".join(indicators)
+
+
 # ---------------------------------------------------------------------------
 # Convenience: build full prediction payload
 # ---------------------------------------------------------------------------
@@ -145,6 +174,7 @@ def build_prediction_payload(
         "dropout_probability": round(probability, 4),
         "risk_score": score,
         "burnout_risk_level": level,
+        "academic_disengagement_indicators": derive_disengagement_indicators(triggers_str),
         "key_behavioural_triggers": triggers_str,
         "recommended_intervention_strategy": recommend_intervention(triggers_str, level),
     }

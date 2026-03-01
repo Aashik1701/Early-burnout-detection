@@ -1,9 +1,16 @@
-# Early Burnout Detection
+# Sentinal AI — Early Burnout Detection
+
+> **Sentinal AI** is a proactive behavioural analytics system that detects student burnout and dropout risk before severe academic decline sets in.
+
+<p align="center">
+  <a href="https://sentinel-ai-analytics.streamlit.app/">
+    <img src="https://img.shields.io/badge/%F0%9F%9A%80_Live_Dashboard-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Live Dashboard"/>
+  </a>
+</p>
 
 ## 1. Project Overview
 
-This project implements an early-warning behavioural analytics pipeline for higher education institutions to identify students at risk before severe academic decline.  
-The system uses behavioural and performance indicators to estimate dropout probability, derive a risk score, classify burnout risk level, highlight key behavioural triggers, and produce an intervention recommendation.
+This project implements an end-to-end early-warning pipeline for higher education institutions. It fuses three datasets into a unified student profile, trains a tuned ML model, scores every student with personalised risk levels and behavioural triggers, recommends interventions, and surfaces everything through an interactive dashboard and a polished HTML presentation.
 
 ### Key Results
 
@@ -19,6 +26,15 @@ The system uses behavioural and performance indicators to estimate dropout proba
 <p align="center">
   <img src="public/image/risk score distribution with adaptive bin boundaries.png" width="700" alt="Risk Score Distribution"/>
 </p>
+
+### Deliverables at a Glance
+
+| Deliverable | Description |
+|---|---|
+| **ML Pipeline** | Data fusion → feature engineering → model tournament → dual-threshold scoring |
+| **Risk Engine** | Per-student triggers, intervention recommendations, adaptive risk bins |
+| **Streamlit Dashboard** | 6-tab interactive frontend — [**Live Demo**](https://sentinel-ai-analytics.streamlit.app/) |
+| **HTML Presentation** | 12-slide navigable deck with download-as-single-file capability |
 
 The implementation is designed for hackathon delivery and production extension:
 
@@ -81,19 +97,36 @@ BehAnalytics/
 │   └── 02_model_training.ipynb
 ├── src/
 │   ├── __init__.py
-│   ├── data_pipeline.py
-│   ├── modeling.py
-│   └── risk_engine.py
+│   ├── data_pipeline.py          # dataset fusion & feature engineering
+│   ├── modeling.py                # model tournament, SMOTE, threshold tuning
+│   └── risk_engine.py             # risk scoring, triggers, interventions
 ├── scripts/
 │   ├── prepare_data.py
 │   └── train_model.py
+├── dashboard/
+│   └── app.py                     # Streamlit 6-tab interactive dashboard
+├── presentation/
+│   ├── main.html                  # slide presenter (open in browser)
+│   └── slides/
 ├── configs/
 │   └── model_config.yaml
-├── artifacts/                    # generated at runtime
-├── reports/                      # optional metrics/plots
+├── artifacts/                     # generated at runtime
+│   ├── dropout_model.joblib
+│   ├── predictions.csv
+│   ├── metrics.json
+│   ├── engineered_features.csv
+│   └── model_selection_diagnostics.json
+├── public/image/                  # visualisation PNGs
+├── docs/
+│   ├── COLAB_SETUP.md
+│   ├── dataset relation.md
+│   ├── problem_statement.md
+│   └── project idea.md
+│   └── DOCUMENTATION.md               # full technical documentation
+│   └── project_knowledge.md          
 ├── requirements.txt
 ├── setup.sh
-└── COLAB_SETUP.md
+└── README.md
 ```
 
 ---
@@ -160,7 +193,7 @@ python -m ipykernel install --user --name behanalytics --display-name "BehAnalyt
 
 ### 6.2 Colab Setup
 
-Refer to `COLAB_SETUP.md` for detailed Colab execution patterns.
+Refer to `docs/COLAB_SETUP.md` for detailed Colab execution patterns.
 
 ---
 
@@ -277,11 +310,12 @@ All axes point in the **risk direction** (larger = more at risk). Protective fea
 
 ## 13. Suggested Next Extensions
 
-- Add calibrated probability outputs (`CalibratedClassifierCV`).
 - Add temporal drift and trend-based disengagement detection windows.
 - Wrap model in FastAPI inference endpoint for web integration.
 - Build student-level explanation cards for advisors.
 - Add CI checks, unit tests, and data validation tests.
+- Deploy dashboard as a hosted Streamlit Cloud app.
+- Replace rule-based interventions with a learned recommender.
 
 ---
 
@@ -294,28 +328,63 @@ All axes point in the **risk direction** (larger = more at risk). Protective fea
 
 ---
 
-## 15. Contact and Ownership
+## 15. HTML Presentation
 
-Repository owner: `Aashik1701`  
-Project: `Early-burnout-detection`
+A 12-slide navigable presentation is available under `presentation/`.
 
-If this repository is used in competition or academic review, include:
+### View
 
-- dataset references,
-- engineered feature rationale,
-- model selection rationale,
-- ethics and intervention safeguards.
+Open `presentation/main.html` in any modern browser.
+
+### Features
+
+- **Keyboard navigation** — `←` / `→` arrows, `Home` / `End`, `Space` to advance
+- **Progress bar** and slide counter
+- **Fullscreen** — press `F` or click the expand button
+- **Download** — click the download button to get a single self-contained `BehAnalytics_Presentation.html` file with all 12 slides embedded (no server needed)
+
+### Slides
+
+| # | Topic |
+|---|-------|
+| 1 | Title Slide |
+| 2 | Problem Statement |
+| 3 | System Requirements |
+| 4 | Data Sources |
+| 5 | Feature Engineering Pipeline |
+| 6 | Model Results |
+| 7 | Dual-Threshold System |
+| 8 | System Architecture |
+| 9 | Risk Engine |
+| 10 | Dashboard Overview |
+| 11 | Behavioral Insights |
+| 12 | Future Scope & Summary |
 
 ---
 
-## 16. Frontend Dashboard (Streamlit)
+## 16. Documentation
+
+| File | Contents |
+|------|----------|
+| `DOCUMENTATION.md` | Full technical documentation (~1000 lines) covering data, features, model, architecture, results, behavioural insights, practical impact, and future scope |
+| `project_knowledge.md` | PowerPoint-ready slide content for 25 slides |
+
+---
+
+## 17. Frontend Dashboard (Streamlit)
+
+<p>
+  <a href="https://sentinel-ai-analytics.streamlit.app/">
+    <img src="https://img.shields.io/badge/%F0%9F%9A%80_Open_Live_Dashboard-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Open Live Dashboard"/>
+  </a>
+</p>
 
 The project includes a lightweight frontend dashboard at `dashboard/app.py` that reads:
 
 - `artifacts/predictions.csv`
 - `artifacts/metrics.json`
 
-### Run
+### Run Locally
 
 ```bash
 python scripts/train_model.py
@@ -340,3 +409,21 @@ streamlit run dashboard/app.py
 - **Intervention Planner** — counselor capacity, weekly contact slots, round-robin assignment, prioritized list by urgency, downloadable assignment sheet
 - **Program Impact** — expected students contacted, high-risk capture estimate, false-positive load at selected threshold, workload by strategy type, impact efficiency summary
 - **Cohort Insights** — stacked bars for risk level distribution, average risk score, and high-risk rate by department/semester/gender/job status, cross-dimension heatmap
+
+---
+
+## 18. Contact and Ownership
+
+Repository owner: `Aashik1701`  
+Project: **Sentinal AI** (`Early-burnout-detection`)
+
+This repository is used in competition/academic review, include:
+
+- dataset references,
+- engineered feature rationale,
+- model selection rationale,
+- ethics and intervention safeguards.
+
+---
+
+<p align="center"><em>Built with scikit-learn, Streamlit, Plotly, and Tailwind CSS</em></p>

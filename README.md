@@ -326,7 +326,9 @@ streamlit run dashboard/app.py
 
 - KPI cards (students, high-risk count, average risk score, recall by mode)
 - Mode toggle (`balanced` vs `high_recall`)
+- Balanced vs high-recall trade-off comparison chart
 - Urgent-only intervention filter and outreach capacity planner
+- What-if threshold simulator for flagged-load planning
 - Risk-level distribution and risk-score histogram
 - Top behavioural triggers chart
 - Intervention strategy mix visualization

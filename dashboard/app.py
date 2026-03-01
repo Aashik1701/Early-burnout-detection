@@ -92,6 +92,16 @@ with st.sidebar:
         step=5,
     )
 
+    default_threshold_for_mode = float(mode_view.get("threshold", metrics.get("threshold", 0.5))) if mode_metrics else float(metrics.get("threshold", 0.5))
+    simulator_threshold = st.slider(
+        "What-if threshold simulator",
+        min_value=0.01,
+        max_value=0.99,
+        value=max(0.01, min(0.99, default_threshold_for_mode)),
+        step=0.01,
+        help="Simulates how many students would be flagged at this probability threshold.",
+    )
+
 mode_view = mode_metrics.get(mode, {})
 
 if selected_levels:
@@ -145,6 +155,45 @@ with o2:
     metric_block("Calibration", str(metrics.get("calibration", "none")))
 with o3:
     metric_block("Current mode", mode)
+
+if len(available_modes) >= 2:
+    st.subheader("Mode Trade-off Comparison")
+    compare_rows = []
+    for mode_name in ["balanced", "high_recall"]:
+        mode_row = mode_metrics.get(mode_name)
+        if mode_row:
+            compare_rows.extend(
+                [
+                    {"Mode": mode_name, "Metric": "Accuracy", "Value": mode_row.get("accuracy", 0.0)},
+                    {"Mode": mode_name, "Metric": "Precision", "Value": mode_row.get("precision", 0.0)},
+                    {"Mode": mode_name, "Metric": "Recall", "Value": mode_row.get("recall", 0.0)},
+                    {"Mode": mode_name, "Metric": "F1", "Value": mode_row.get("f1", 0.0)},
+                ]
+            )
+
+    compare_df = pd.DataFrame(compare_rows)
+    if not compare_df.empty:
+        compare_fig = px.bar(
+            compare_df,
+            x="Metric",
+            y="Value",
+            color="Mode",
+            barmode="group",
+            text="Value",
+            range_y=[0, 1],
+        )
+        compare_fig.update_traces(texttemplate="%{text:.3f}", textposition="outside")
+        st.plotly_chart(compare_fig, use_container_width=True)
+
+        b = mode_metrics.get("balanced", {})
+        h = mode_metrics.get("high_recall", {})
+        d1, d2, d3 = st.columns(3)
+        with d1:
+            metric_block("Recall gain (high_recall - balanced)", f"{h.get('recall', 0.0) - b.get('recall', 0.0):+.4f}")
+        with d2:
+            metric_block("Precision drop", f"{h.get('precision', 0.0) - b.get('precision', 0.0):+.4f}")
+        with d3:
+            metric_block("Threshold shift", f"{h.get('threshold', 0.0) - b.get('threshold', 0.0):+.4f}")
 
 tabs = st.tabs(["Overview", "Action Queue", "Student Detail"])
 
@@ -222,6 +271,39 @@ with tabs[0]:
             metric_block("Urgent cases in outreach", f"{outreach_urgent:,}")
 
         st.caption("Outreach set is computed from highest risk scores in the current filtered cohort.")
+    else:
+        st.info("No rows after filtering.")
+
+    st.subheader("What-if Threshold Impact")
+    if len(filtered):
+        simulated_flag = (filtered["dropout_probability"] >= simulator_threshold).astype(int)
+        simulated_flagged_count = int(simulated_flag.sum())
+        simulated_flagged_rate = (simulated_flagged_count / len(filtered) * 100.0) if len(filtered) else 0.0
+
+        high_subset = filtered[filtered["burnout_risk_level"] == "High"]
+        simulated_high_coverage = (
+            (high_subset["dropout_probability"] >= simulator_threshold).mean() * 100.0
+            if len(high_subset)
+            else 0.0
+        )
+
+        default_mode_threshold = float(mode_view.get("threshold", metrics.get("threshold", 0.5)))
+        default_mode_flagged_count = int((filtered["dropout_probability"] >= default_mode_threshold).sum())
+        flagged_delta = simulated_flagged_count - default_mode_flagged_count
+
+        s1, s2, s3, s4 = st.columns(4)
+        with s1:
+            metric_block("Simulator threshold", f"{simulator_threshold:.2f}")
+        with s2:
+            metric_block("Flagged students", f"{simulated_flagged_count:,}")
+        with s3:
+            metric_block("Flagged rate", f"{simulated_flagged_rate:.1f}%")
+        with s4:
+            metric_block("High-risk coverage", f"{simulated_high_coverage:.1f}%")
+
+        st.caption(
+            f"Compared with current {mode} threshold ({default_mode_threshold:.4f}), flagged count change is {flagged_delta:+d}."
+        )
     else:
         st.info("No rows after filtering.")
 

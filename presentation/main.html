@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>BehAnalytics — Presentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        /* ───── Slide viewport ───── */
+        #slide-viewport {
+            position: relative;
+            width: 1280px;
+            height: 720px;
+            transform-origin: center center;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 80px rgba(59, 130, 246, 0.08), 0 0 0 1px rgba(255,255,255,0.06);
+        }
+
+        #slide-viewport iframe {
+            width: 1280px;
+            height: 720px;
+            border: none;
+            display: block;
+        }
+
+        /* ───── Bottom bar ───── */
+        #controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            z-index: 100;
+        }
+
+        .ctrl-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.07);
+            color: #94a3b8;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+        .ctrl-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+        .ctrl-btn:active { transform: scale(0.92); }
+        .ctrl-btn.disabled { opacity: 0.25; pointer-events: none; }
+
+        #slide-counter {
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            min-width: 80px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        /* ───── Progress bar ───── */
+        #progress-track {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(255,255,255,0.04);
+            z-index: 100;
+        }
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #6366f1);
+            transition: width 0.3s ease;
+            border-radius: 0 2px 2px 0;
+        }
+
+        /* ───── Slide title overlay ───── */
+        #slide-title {
+            position: fixed;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(148, 163, 184, 0.6);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            z-index: 100;
+            transition: opacity 0.3s ease;
+        }
+
+        /* ───── Fullscreen button ───── */
+        .ctrl-sep {
+            width: 1px;
+            height: 24px;
+            background: rgba(255,255,255,0.08);
+        }
+
+        /* ───── Keyboard hint (fades after 3s) ───── */
+        #kbd-hint {
+            position: fixed;
+            bottom: 72px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: rgba(148, 163, 184, 0.5);
+            transition: opacity 0.5s ease;
+            z-index: 100;
+        }
+        #kbd-hint kbd {
+            display: inline-block;
+            padding: 2px 8px;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            margin: 0 2px;
+            background: rgba(255,255,255,0.04);
+        }
+
+        /* ───── Responsive scaling ───── */
+        @media (max-width: 1400px) or (max-height: 850px) {
+            #slide-viewport { transform: scale(0.75); }
+        }
+        @media (max-width: 1100px) or (max-height: 700px) {
+            #slide-viewport { transform: scale(0.6); }
+        }
+        @media (max-width: 800px) {
+            #slide-viewport { transform: scale(0.45); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Progress bar -->
+    <div id="progress-track"><div id="progress-fill" style="width: 0%"></div></div>
+
+    <!-- Slide title -->
+    <div id="slide-title"></div>
+
+    <!-- Main slide area -->
+    <div id="slide-viewport">
+        <iframe id="slide-frame" sandbox="allow-same-origin allow-scripts allow-popups" src=""></iframe>
+    </div>
+
+    <!-- Keyboard hint -->
+    <div id="kbd-hint">
+        <kbd>&larr;</kbd> <kbd>&rarr;</kbd> to navigate &nbsp;&middot;&nbsp;
+        <kbd>F</kbd> fullscreen &nbsp;&middot;&nbsp;
+        <kbd>Home</kbd> first &nbsp;&middot;&nbsp;
+        <kbd>End</kbd> last
+    </div>
+
+    <!-- Bottom controls -->
+    <div id="controls">
+        <button class="ctrl-btn" id="btn-first" title="First slide (Home)">
+            <i class="fa-solid fa-backward-fast"></i>
+        </button>
+        <button class="ctrl-btn" id="btn-prev" title="Previous (←)">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <span id="slide-counter">1 / 1</span>
+        <button class="ctrl-btn" id="btn-next" title="Next (→)">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="ctrl-btn" id="btn-last" title="Last slide (End)">
+            <i class="fa-solid fa-forward-fast"></i>
+        </button>
+        <div class="ctrl-sep"></div>
+        <button class="ctrl-btn" id="btn-fullscreen" title="Fullscreen (F)">
+            <i class="fa-solid fa-expand"></i>
+        </button>
+        <button class="ctrl-btn" id="btn-download" title="Download as single HTML">
+            <i class="fa-solid fa-download"></i>
+        </button>
+    </div>
+
+    <!-- Download overlay -->
+    <div id="dl-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:200; display:none; align-items:center; justify-content:center;">
+        <div style="text-align:center;">
+            <div id="dl-spinner" style="width:48px;height:48px;border:3px solid rgba(255,255,255,0.1);border-top-color:#3b82f6;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
+            <div id="dl-status" style="font-size:14px;color:#94a3b8;">Bundling slides…</div>
+        </div>
+    </div>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+    <script>
+    /*
+     * ──────────────────────────────────────────────────────
+     *  SLIDE REGISTRY
+     *
+     *  Add new slides here. Each entry is { file, title }.
+     *  Files are relative to the slides/ folder.
+     * ──────────────────────────────────────────────────────
+     */
+    const SLIDES = [
+        { file: "slide1.html",  title: "Title Slide" },
+        { file: "slide2.html",  title: "Problem Statement" },
+        { file: "slide3.html",  title: "System Requirements" },
+        { file: "slide4.html",  title: "Data Sources" },
+        { file: "slide5.html",  title: "Feature Engineering Pipeline" },
+        { file: "slide6.html",  title: "Model Results" },
+        { file: "slide7.html",  title: "Dual-Threshold System" },
+        { file: "slide8.html",  title: "System Architecture" },
+        { file: "slide9.html",  title: "Risk Engine" },
+        { file: "slide10.html", title: "Dashboard Overview" },
+        { file: "slide11.html", title: "Behavioral Insights" },
+        { file: "slide12.html", title: "Future Scope & Summary" },
+    ];
+
+    const SLIDES_DIR = "slides/";
+
+    // ─── State ───
+    let current = 0;
+
+    // ─── DOM refs ───
+    const frame     = document.getElementById("slide-frame");
+    const counter   = document.getElementById("slide-counter");
+    const progress  = document.getElementById("progress-fill");
+    const titleEl   = document.getElementById("slide-title");
+    const btnPrev   = document.getElementById("btn-prev");
+    const btnNext   = document.getElementById("btn-next");
+    const btnFirst  = document.getElementById("btn-first");
+    const btnLast   = document.getElementById("btn-last");
+    const btnFs     = document.getElementById("btn-fullscreen");
+    const kbdHint   = document.getElementById("kbd-hint");
+
+    // ─── Navigation ───
+    function goTo(index) {
+        if (index < 0 || index >= SLIDES.length) return;
+        current = index;
+        frame.src = SLIDES_DIR + SLIDES[current].file;
+        update();
+    }
+
+    function update() {
+        const total = SLIDES.length;
+        counter.textContent = `${current + 1} / ${total}`;
+        progress.style.width = `${((current + 1) / total) * 100}%`;
+        titleEl.textContent = SLIDES[current].title || "";
+
+        btnPrev.classList.toggle("disabled", current === 0);
+        btnFirst.classList.toggle("disabled", current === 0);
+        btnNext.classList.toggle("disabled", current === total - 1);
+        btnLast.classList.toggle("disabled", current === total - 1);
+    }
+
+    function next()  { goTo(current + 1); }
+    function prev()  { goTo(current - 1); }
+    function first() { goTo(0); }
+    function last()  { goTo(SLIDES.length - 1); }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    // ─── Event listeners ───
+    btnPrev.addEventListener("click", prev);
+    btnNext.addEventListener("click", next);
+    btnFirst.addEventListener("click", first);
+    btnLast.addEventListener("click", last);
+    btnFs.addEventListener("click", toggleFullscreen);
+
+    document.addEventListener("keydown", (e) => {
+        switch (e.key) {
+            case "ArrowRight": case " ":       e.preventDefault(); next(); break;
+            case "ArrowLeft":  case "Backspace": e.preventDefault(); prev(); break;
+            case "Home":        e.preventDefault(); first(); break;
+            case "End":         e.preventDefault(); last(); break;
+            case "f": case "F": e.preventDefault(); toggleFullscreen(); break;
+        }
+    });
+
+    // Fade out keyboard hint after 4 seconds
+    setTimeout(() => { kbdHint.style.opacity = "0"; }, 4000);
+
+    // ─── Auto-scale viewport to fit window ───
+    function scaleViewport() {
+        const vp = document.getElementById("slide-viewport");
+        const padX = 40, padY = 120; // room for controls + progress
+        const scaleX = (window.innerWidth - padX) / 1280;
+        const scaleY = (window.innerHeight - padY) / 720;
+        const scale = Math.min(scaleX, scaleY, 1);
+        vp.style.transform = `scale(${scale})`;
+    }
+
+    window.addEventListener("resize", scaleViewport);
+    scaleViewport();
+
+    // ─── Download as single HTML ───
+    const btnDl     = document.getElementById("btn-download");
+    const dlOverlay = document.getElementById("dl-overlay");
+    const dlStatus  = document.getElementById("dl-status");
+
+    btnDl.addEventListener("click", buildDownload);
+
+    async function buildDownload() {
+        dlOverlay.style.display = "flex";
+        dlStatus.textContent = "Fetching slides…";
+
+        try {
+            // Fetch every slide's full HTML
+            const bodies = [];
+            for (let i = 0; i < SLIDES.length; i++) {
+                dlStatus.textContent = `Fetching slide ${i + 1} / ${SLIDES.length}…`;
+                const resp = await fetch(SLIDES_DIR + SLIDES[i].file);
+                if (!resp.ok) throw new Error(`Failed to load ${SLIDES[i].file}`);
+                bodies.push(await resp.text());
+            }
+
+            dlStatus.textContent = "Building file…";
+
+            // Extract the inner content of each slide's <html>
+            // We embed each slide as a hidden div, and show one at a time
+            const slideContents = bodies.map((html, i) => {
+                return `<!-- ═══ SLIDE ${i + 1}: ${SLIDES[i].title} ═══ -->\n<div class="slide-page" id="sp-${i}" style="display:${i === 0 ? 'block' : 'none'}">${html}</div>`;
+            });
+
+            const bundled = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BehAnalytics — Full Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:#0a0a0a; color:#fff; overflow:hidden; height:100vh; width:100vw; display:flex; flex-direction:column; align-items:center; justify-content:center; user-select:none; }
+#slide-viewport { position:relative; width:1280px; height:720px; transform-origin:center center; border-radius:8px; overflow:hidden; box-shadow:0 0 80px rgba(59,130,246,0.08),0 0 0 1px rgba(255,255,255,0.06); }
+.slide-page { width:1280px; height:720px; overflow:hidden; }
+.slide-page iframe { display:none; }
+#controls { position:fixed; bottom:0; left:0; right:0; height:56px; display:flex; align-items:center; justify-content:center; gap:16px; background:rgba(15,23,42,0.85); backdrop-filter:blur(16px); border-top:1px solid rgba(255,255,255,0.06); z-index:100; }
+.ctrl-btn { width:40px; height:40px; border:none; border-radius:10px; background:rgba(255,255,255,0.07); color:#94a3b8; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s ease; }
+.ctrl-btn:hover { background:rgba(255,255,255,0.14); color:#fff; }
+.ctrl-btn:active { transform:scale(0.92); }
+.ctrl-btn.disabled { opacity:0.25; pointer-events:none; }
+#slide-counter { font-size:14px; font-weight:600; color:#94a3b8; min-width:80px; text-align:center; letter-spacing:0.5px; }
+#progress-track { position:fixed; top:0; left:0; right:0; height:3px; background:rgba(255,255,255,0.04); z-index:100; }
+#progress-fill { height:100%; background:linear-gradient(90deg,#3b82f6,#6366f1); transition:width 0.3s ease; border-radius:0 2px 2px 0; }
+#slide-title { position:fixed; top:12px; left:50%; transform:translateX(-50%); font-size:12px; font-weight:500; color:rgba(148,163,184,0.6); letter-spacing:1px; text-transform:uppercase; z-index:100; }
+.ctrl-sep { width:1px; height:24px; background:rgba(255,255,255,0.08); }
+</style>
+</head>
+<body>
+<div id="progress-track"><div id="progress-fill" style="width:0%"></div></div>
+<div id="slide-title"></div>
+<div id="slide-viewport">
+${slideContents.join('\n')}
+</div>
+<div id="controls">
+<button class="ctrl-btn" id="btn-first"><i class="fa-solid fa-backward-fast"></i></button>
+<button class="ctrl-btn" id="btn-prev"><i class="fa-solid fa-chevron-left"></i></button>
+<span id="slide-counter">1 / ${SLIDES.length}</span>
+<button class="ctrl-btn" id="btn-next"><i class="fa-solid fa-chevron-right"></i></button>
+<button class="ctrl-btn" id="btn-last"><i class="fa-solid fa-forward-fast"></i></button>
+<div class="ctrl-sep"></div>
+<button class="ctrl-btn" id="btn-fs"><i class="fa-solid fa-expand"></i></button>
+</div>
+<script>
+const TOTAL=${SLIDES.length};
+let cur=0;
+const pages=document.querySelectorAll('.slide-page');
+const counter=document.getElementById('slide-counter');
+const prog=document.getElementById('progress-fill');
+const ttl=document.getElementById('slide-title');
+const titles=${JSON.stringify(SLIDES.map(s=>s.title))};
+function go(i){if(i<0||i>=TOTAL)return;pages[cur].style.display='none';cur=i;pages[cur].style.display='block';counter.textContent=(cur+1)+' / '+TOTAL;prog.style.width=((cur+1)/TOTAL*100)+'%';ttl.textContent=titles[cur]||'';document.getElementById('btn-prev').classList.toggle('disabled',cur===0);document.getElementById('btn-first').classList.toggle('disabled',cur===0);document.getElementById('btn-next').classList.toggle('disabled',cur===TOTAL-1);document.getElementById('btn-last').classList.toggle('disabled',cur===TOTAL-1);}
+document.getElementById('btn-prev').onclick=()=>go(cur-1);
+document.getElementById('btn-next').onclick=()=>go(cur+1);
+document.getElementById('btn-first').onclick=()=>go(0);
+document.getElementById('btn-last').onclick=()=>go(TOTAL-1);
+document.getElementById('btn-fs').onclick=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen();};
+document.addEventListener('keydown',e=>{switch(e.key){case'ArrowRight':case' ':e.preventDefault();go(cur+1);break;case'ArrowLeft':case'Backspace':e.preventDefault();go(cur-1);break;case'Home':e.preventDefault();go(0);break;case'End':e.preventDefault();go(TOTAL-1);break;case'f':case'F':e.preventDefault();if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen();break;}});
+function scaleVP(){const vp=document.getElementById('slide-viewport');const sx=(window.innerWidth-40)/1280;const sy=(window.innerHeight-120)/720;vp.style.transform='scale('+Math.min(sx,sy,1)+')';}
+window.addEventListener('resize',scaleVP);scaleVP();
+go(0);
+<\/script>
+</body>
+</html>`;
+
+            // Trigger download
+            const blob = new Blob([bundled], { type: "text/html;charset=utf-8" });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement("a");
+            a.href     = url;
+            a.download = "BehAnalytics_Presentation.html";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            dlStatus.textContent = "Done!";
+            setTimeout(() => { dlOverlay.style.display = "none"; }, 800);
+
+        } catch (err) {
+            dlStatus.textContent = "Error: " + err.message;
+            setTimeout(() => { dlOverlay.style.display = "none"; }, 2500);
+        }
+    }
+
+    // ─── Init ───
+    goTo(0);
+    </script>
+</body>
+</html>

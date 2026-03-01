@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Problem Statement - BehAnalytics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; overflow: hidden; background-color: #f8fafc; }
+        .slide-container { width: 1280px; height: 720px; display: flex; overflow: hidden; position: relative; }
+        
+        .left-panel {
+            flex: 0 0 38%;
+            background-color: #0f172a; /* Slate 900 */
+            color: white;
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .right-panel {
+            flex: 1;
+            background-color: #ffffff;
+            padding: 60px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .timeline-container {
+            position: relative;
+            padding-left: 20px;
+            border-left: 2px solid #e2e8f0;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-item {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: -26px;
+            top: 6px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #cbd5e1;
+            border: 2px solid #fff;
+        }
+        
+        .timeline-dot.active {
+            background-color: #ef4444;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
+        }
+
+        .quote-box {
+            background-color: #eff6ff; /* Blue 50 */
+            border-left: 4px solid #3b82f6;
+            padding: 24px;
+            border-radius: 0 12px 12px 0;
+            margin: 20px 0 30px 0;
+        }
+
+        .gap-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .gap-item {
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .gap-icon {
+            width: 36px;
+            height: 36px;
+            background-color: #f1f5f9;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; }
+    </style>
+</head>
+<body>
+<div class="slide-container">
+<!-- Left Panel: The Pain Points & Stats -->
+<div class="left-panel">
+<!-- Subtle Pattern Background -->
+<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.1; z-index: 0;">
+<svg height="100%" width="100%">
+<defs>
+<pattern height="30" id="grid" patternunits="userSpaceOnUse" width="30">
+<circle cx="2" cy="2" fill="white" r="1.5"></circle>
+</pattern>
+</defs>
+<rect fill="url(#grid)" height="100%" width="100%"></rect>
+</svg>
+</div>
+<div class="z-10 relative">
+<div class="flex items-center gap-3 mb-6 text-blue-400">
+<i class="fa-solid fa-triangle-exclamation"></i>
+<span class="text-sm font-bold uppercase tracking-wider">The Challenge</span>
+</div>
+<h2 class="text-4xl font-bold mb-8 leading-tight">Student dropout is a <span class="text-blue-400">global crisis</span> of lost potential.</h2>
+<div class="stat-card">
+<div class="text-5xl font-bold text-white mb-2">20–50%</div>
+<p class="text-slate-400 text-sm">Global dropout rates in higher education institutions.</p>
+</div>
+<div class="stat-card border-l-4 border-l-red-500">
+<div class="flex items-start gap-4">
+<div class="mt-1"><i class="fa-solid fa-arrow-trend-down text-red-400 text-xl"></i></div>
+<div>
+<p class="text-white font-semibold text-lg mb-1">Double Impact</p>
+<p class="text-slate-400 text-sm">Every dropout represents lost institutional investment and lost individual student potential.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Panel: The Analysis -->
+<div class="right-panel">
+<h3 class="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+<span class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center text-sm"><i class="fa-solid fa-xmark"></i></span>
+                Why Current Detection Fails
+            </h3>
+<div class="timeline-container">
+<div class="timeline-item">
+<div class="timeline-dot"></div>
+<h4 class="font-semibold text-slate-700">Early Signs (Missed)</h4>
+<p class="text-sm text-slate-500 mt-1">Behavioral changes, stress spikes, minor engagement dips go unnoticed.</p>
+</div>
+<div class="timeline-item">
+<div class="timeline-dot active"></div>
+<h4 class="font-semibold text-red-600">The Reactive Point</h4>
+<p class="text-sm text-slate-600 mt-1">Institutions notice only after grades collapse or attendance is critically low.</p>
+</div>
+<div class="timeline-item">
+<div class="timeline-dot"></div>
+<h4 class="font-semibold text-slate-400">Intervention Attempt (Too Late)</h4>
+<p class="text-sm text-slate-400 mt-1">Standard outreach sent, but student has often already mentally disengaged.</p>
+</div>
+</div>
+<div class="quote-box">
+<p class="text-slate-500 text-xs font-bold uppercase tracking-wide mb-2">Core Question</p>
+<p class="text-lg font-medium text-slate-800 leading-relaxed italic">
+                    "How can we identify students likely to burn out or drop out <span class="text-blue-600 font-bold">early enough</span> — using behavioural and academic signals — so that targeted interventions can be deployed before the point of no return?"
+                </p>
+</div>
+<h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-5">What's Missing Today</h3>
+<div class="gap-grid">
+<div class="gap-item">
+<div class="gap-icon text-orange-500 bg-orange-50"><i class="fa-solid fa-bell-slash"></i></div>
+<div>
+<p class="font-semibold text-slate-800 text-sm">No Early Warning</p>
+<p class="text-xs text-slate-500 mt-1">Relies on lagging indicators like grades.</p>
+</div>
+</div>
+<div class="gap-item">
+<div class="gap-icon text-purple-500 bg-purple-50"><i class="fa-solid fa-users-slash"></i></div>
+<div>
+<p class="font-semibold text-slate-800 text-sm">No Personalisation</p>
+<p class="text-xs text-slate-500 mt-1">Generic "at-risk" lists without specific actions.</p>
+</div>
+</div>
+<div class="gap-item">
+<div class="gap-icon text-green-500 bg-green-50"><i class="fa-solid fa-scale-unbalanced"></i></div>
+<div>
+<p class="font-semibold text-slate-800 text-sm">Resource Blindness</p>
+<p class="text-xs text-slate-500 mt-1">Ignores counselor capacity limits.</p>
+</div>
+</div>
+<div class="gap-item">
+<div class="gap-icon text-blue-500 bg-blue-50"><i class="fa-solid fa-box-open"></i></div>
+<div>
+<p class="font-semibold text-slate-800 text-sm">Black Box Models</p>
+<p class="text-xs text-slate-500 mt-1">No transparency on *why* a student is flagged.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

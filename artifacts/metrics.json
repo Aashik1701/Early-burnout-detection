@@ -1,0 +1,60 @@
+{
+  "model": "RandomForest + smote",
+  "mode": "balanced",
+  "recommended_usage": {
+    "judge_evaluation_mode": "balanced",
+    "dashboard_deployment_mode": "high_recall"
+  },
+  "calibration": "none",
+  "threshold": 0.2884,
+  "accuracy": 0.7295,
+  "precision": 0.4551,
+  "recall": 0.7537,
+  "f1": 0.5675,
+  "roc_auc": 0.8044,
+  "pr_auc": 0.5709,
+  "brier": 0.140185,
+  "mode_metrics": {
+    "balanced": {
+      "threshold": 0.2884,
+      "accuracy": 0.7295,
+      "precision": 0.4551,
+      "recall": 0.7537,
+      "f1": 0.5675
+    },
+    "high_recall": {
+      "threshold": 0.1219,
+      "accuracy": 0.525,
+      "precision": 0.3219,
+      "recall": 0.9193,
+      "f1": 0.4769
+    }
+  },
+  "classification_report": {
+    "No Dropout": {
+      "precision": 0.9049180327868852,
+      "recall": 0.7220405493786789,
+      "f1-score": 0.803201164059658,
+      "support": 1529.0
+    },
+    "Dropout": {
+      "precision": 0.4551282051282051,
+      "recall": 0.7537154989384289,
+      "f1-score": 0.5675459632294164,
+      "support": 471.0
+    },
+    "accuracy": 0.7295,
+    "macro avg": {
+      "precision": 0.6800231189575452,
+      "recall": 0.7378780241585539,
+      "f1-score": 0.6853735636445373,
+      "support": 2000.0
+    },
+    "weighted avg": {
+      "precision": 0.7989925283732661,
+      "recall": 0.7295,
+      "f1-score": 0.7477043642641361,
+      "support": 2000.0
+    }
+  }
+}

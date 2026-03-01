@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Future Scope &amp; Summary - BehAnalytics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            overflow: hidden;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-color: #f8fafc;
+            padding: 50px 60px;
+        }
+
+        .title-font { font-family: 'Space Grotesk', sans-serif; }
+        .mono-font { font-family: 'Space Mono', monospace; }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background-color: #f5f3ff;
+            border-radius: 6px;
+            color: #7c3aed;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Main Grid */
+        .content-grid {
+            display: flex;
+            gap: 40px;
+            flex: 1;
+            margin-top: 30px;
+            height: 520px; /* Fixed content height */
+        }
+
+        /* Left Panel: Roadmap */
+        .roadmap-panel {
+            flex: 1.4;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .phase-card {
+            background-color: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .phase-badge {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-right: 12px;
+        }
+
+        .short-term .phase-badge { background-color: #dcfce7; color: #15803d; }
+        .long-term .phase-badge { background-color: #e0e7ff; color: #4338ca; }
+
+        .phase-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .roadmap-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .short-term .item-icon { color: #16a34a; background-color: #f0fdf4; }
+        .long-term .item-icon { color: #4f46e5; background-color: #eef2ff; }
+
+        .item-content h4 {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 2px;
+        }
+
+        .item-content p {
+            margin: 0;
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.3;
+        }
+
+        /* Right Panel: Summary */
+        .summary-panel {
+            flex: 1;
+            background-color: #1e293b;
+            border-radius: 20px;
+            padding: 32px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .summary-header {
+            margin-bottom: 24px;
+        }
+
+        .summary-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .summary-subtitle {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .metric-box {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metric-val {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #38bdf8;
+            margin-bottom: 4px;
+        }
+
+        .metric-lbl {
+            font-size: 11px;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .takeaways-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: auto;
+        }
+
+        .takeaway-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .takeaway-check {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #22c55e;
+            color: #052e16;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            flex-shrink: 0;
+        }
+
+        .takeaway-text {
+            font-size: 13px;
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+
+        .quote-box {
+            background-color: rgba(56, 189, 248, 0.1);
+            border-left: 3px solid #38bdf8;
+            padding: 16px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 24px;
+        }
+
+        .quote-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #bae6fd;
+            font-style: italic;
+        }
+
+        /* Decorative */
+        .bg-glow {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 400px;
+            height: 400px;
+            background-color: #4f46e5;
+            opacity: 0.2;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+        }
+        
+        .grid-pattern {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: 0;
+        }
+
+        .connector-line {
+            position: absolute;
+            left: 36px;
+            top: 20px;
+            bottom: -20px;
+            width: 2px;
+            background-color: #cbd5e1;
+            z-index: 0;
+            display: none; /* Hidden for separate card style */
+        }
+    </style>
+</head>
+<body>
+<div class="slide-container">
+<!-- Header -->
+<div style="position: relative; z-index: 10;">
+<div class="header-badge">
+<i class="fa-solid fa-road mr-2"></i> Roadmap &amp; Conclusion
+        </div>
+<h1 class="text-4xl font-bold text-slate-900 title-font">Future Scope &amp; Summary</h1>
+<p class="text-slate-500 text-lg mt-2">The path forward and the value delivered today.</p>
+</div>
+<div class="content-grid">
+<!-- Left Panel: Future Scope -->
+<div class="roadmap-panel">
+<!-- Short Term Card -->
+<div class="phase-card short-term">
+<div class="phase-header">
+<span class="phase-badge">Phase 1</span>
+<h3 class="phase-title">Immediate Enhancements</h3>
+</div>
+<div class="items-grid">
+<div class="roadmap-item">
+<div class="item-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+<div class="item-content">
+<h4>SHAP Explanations</h4>
+<p>Per-student waterfall plots for full transparency.</p>
+</div>
+</div>
+<div class="roadmap-item">
+<div class="item-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+<div class="item-content">
+<h4>Governance Tab</h4>
+<p>Model versioning, training dates, and calibration logs.</p>
+</div>
+</div>
+<div class="roadmap-item">
+<div class="item-icon"><i class="fa-solid fa-broom"></i></div>
+<div class="item-content">
+<h4>Data Quality Monitor</h4>
+<p>Automated alerts for missing values or feature drift.</p>
+</div>
+</div>
+<div class="roadmap-item">
+<div class="item-icon"><i class="fa-solid fa-palette"></i></div>
+<div class="item-content">
+<h4>Custom Theming</h4>
+<p>Branded UI with dark mode support.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Long Term Card -->
+<div class="phase-card long-term">
+<div class="phase-header">
+<span class="phase-badge">Phase 2</span>
+<h3 class="phase-title">Strategic Evolution</h3>
+</div>
+<div class="items-grid">
+<div class="roadmap-item">
+<div class="item-icon"><i class="fa-solid fa-chart-line"></i></div>
+<div class="item-content">
+<h4>Longitudinal Tracking</h4>
+<p>Multi-semester trend analysis for early drift detection.</p>
+</div>
+</div>
+<div class="roadmap-item">
+<div class="item-icon"><i class="fa-solid fa-plug"></i></div>
+<div class="item-content">
+<h4>LMS API Integration</h4>
+<p>Real-time data streaming from Canvas/Moodle.</p>
+</div>
+</div>
+<div class="roadmap-item">
+<div class="item-icon"><i class="fa-solid fa-diagram-project"></i></div>
+<div class="item-content">
+<h4>Causal Inference</h4>
+<p>Using DoWhy to understand "why" beyond correlation.</p>
+</div>
+</div>
+<div class="roadmap-item">
+<div class="item-icon"><i class="fa-solid fa-robot"></i></div>
+<div class="item-content">
+<h4>Automated Outreach</h4>
+<p>Trigger-based email nudges for low-risk cases.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Panel: Summary -->
+<div class="summary-panel">
+<div class="bg-glow"></div>
+<div class="grid-pattern"></div>
+<div class="summary-header relative z-10">
+<h2 class="summary-title">BehAnalytics Core</h2>
+<p class="summary-subtitle">Project Impact at a Glance</p>
+</div>
+<div class="metrics-grid relative z-10">
+<div class="metric-box">
+<div class="metric-val">10,000</div>
+<div class="metric-lbl">Students Scored</div>
+</div>
+<div class="metric-box">
+<div class="metric-val">0.8044</div>
+<div class="metric-lbl">ROC-AUC Score</div>
+</div>
+<div class="metric-box">
+<div class="metric-val">29</div>
+<div class="metric-lbl">Engineered Features</div>
+</div>
+<div class="metric-box">
+<div class="metric-val">92%</div>
+<div class="metric-lbl">High-Recall Catch Rate</div>
+</div>
+</div>
+<div class="takeaways-list relative z-10">
+<div class="takeaway-item">
+<div class="takeaway-check"><i class="fa-solid fa-check"></i></div>
+<p class="takeaway-text">Fused 3 datasets into a unified behavioral view</p>
+</div>
+<div class="takeaway-item">
+<div class="takeaway-check"><i class="fa-solid fa-check"></i></div>
+<p class="takeaway-text">Dual-thresholds optimize for safety vs. precision</p>
+</div>
+<div class="takeaway-item">
+<div class="takeaway-check"><i class="fa-solid fa-check"></i></div>
+<p class="takeaway-text">Decoupled architecture for scalable deployment</p>
+</div>
+</div>
+<div class="quote-box relative z-10">
+<p class="quote-text">"Every flagged student comes with a reason and a plan — not just a number."</p>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

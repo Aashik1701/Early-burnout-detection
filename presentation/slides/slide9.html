@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Risk Engine - BehAnalytics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow: hidden; }
+        .slide-container { width: 1280px; height: 720px; position: relative; overflow: hidden; display: flex; flex-direction: column; background-color: #f8fafc; padding: 50px 60px; }
+        .title-font { font-family: 'Space Grotesk', sans-serif; }
+        .mono-font { font-family: 'Space Mono', monospace; }
+
+        .header-badge { display: inline-flex; align-items: center; padding: 6px 12px; background-color: #fef2f2; border-radius: 6px; color: #ef4444; font-size: 12px; font-weight: 600; margin-bottom: 12px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+        .main-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; margin-top: 30px; height: 100%; }
+
+        /* Left: Pipeline Steps */
+        .pipeline-container { position: relative; padding-left: 20px; }
+        .step-line { position: absolute; left: 34px; top: 20px; bottom: 40px; width: 2px; background-color: #e2e8f0; z-index: 0; }
+        
+        .step-item { display: flex; align-items: flex-start; margin-bottom: 24px; position: relative; z-index: 10; }
+        .step-marker { width: 30px; height: 30px; border-radius: 50%; background-color: white; border: 2px solid #cbd5e1; color: #64748b; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; margin-right: 20px; flex-shrink: 0; transition: all 0.3s; }
+        .step-active .step-marker { border-color: #3b82f6; background-color: #3b82f6; color: white; box-shadow: 0 0 0 4px #eff6ff; }
+        
+        .step-content { background-color: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; flex: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .step-title { font-weight: 700; font-size: 14px; color: #1e293b; margin-bottom: 4px; display: flex; justify-content: space-between; }
+        .step-desc { font-size: 12px; color: #64748b; line-height: 1.4; }
+        
+        .arrow-down { margin-left: 13px; color: #cbd5e1; font-size: 12px; margin-bottom: 8px; }
+
+        /* Right: Logic Rules */
+        .logic-card { background-color: #1e293b; border-radius: 16px; padding: 30px; color: white; height: fit-content; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+        .logic-title { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        
+        .rule-item { display: flex; align-items: center; margin-bottom: 16px; padding: 12px; background-color: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+        .rule-number { font-family: 'Space Mono', monospace; font-size: 10px; color: #64748b; margin-right: 12px; min-width: 15px; }
+        .rule-trigger { font-weight: 600; font-size: 13px; color: #93c5fd; width: 120px; }
+        .rule-arrow { color: #475569; margin: 0 10px; font-size: 12px; }
+        .rule-action { font-size: 12px; color: #e2e8f0; flex: 1; }
+
+        .priority-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: auto; text-transform: uppercase; font-weight: 700; background-color: #334155; color: #94a3b8; }
+        .priority-1 { background-color: #ef4444; color: white; }
+        
+        /* Visual elements */
+        .decor-circle { position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; border-radius: 50%; background-color: rgba(59,130,246,0.1); filter: blur(40px); z-index: 0; }
+        
+        /* Output badge */
+        .output-tag { display: inline-block; padding: 4px 8px; border-radius: 4px; font-family: 'Space Mono', monospace; font-size: 10px; background-color: #f1f5f9; color: #475569; margin-top: 8px; }
+        
+        .bg-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; opacity: 0.3; pointer-events: none; }
+    </style>
+</head>
+<body>
+<div class="slide-container">
+<div class="bg-grid"></div>
+<!-- Header -->
+<div class="relative z-10">
+<div class="header-badge">
+<i class="fa-solid fa-microchip mr-2"></i> Decision Logic
+        </div>
+<h1 class="text-4xl font-bold text-slate-900 title-font">Risk Engine Pipeline</h1>
+<p class="text-slate-500 text-lg mt-2">From raw probabilities to personalized, priority-ranked interventions.</p>
+</div>
+<div class="main-grid">
+<!-- Left Column: Pipeline Process -->
+<div class="pipeline-container">
+<div class="step-line"></div>
+<!-- Step 1 -->
+<div class="step-item step-active">
+<div class="step-marker">1</div>
+<div class="step-content">
+<div class="step-title">
+<span>Risk Score Normalization</span>
+<i class="fa-solid fa-calculator text-blue-500"></i>
+</div>
+<p class="step-desc">Convert raw model probability (0.0-1.0) into a user-friendly 0-100 score.</p>
+<div class="output-tag">Out: Score (e.g., 87)</div>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="step-item step-active">
+<div class="step-marker">2</div>
+<div class="step-content">
+<div class="step-title">
+<span>Level Classification</span>
+<i class="fa-solid fa-layer-group text-blue-500"></i>
+</div>
+<p class="step-desc">Apply adaptive threshold bins based on operating mode (Balanced/High-Recall).</p>
+<div class="output-tag">Out: High Risk</div>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="step-item step-active">
+<div class="step-marker">3</div>
+<div class="step-content">
+<div class="step-title">
+<span>Trigger Extraction</span>
+<i class="fa-solid fa-magnifying-glass-chart text-blue-500"></i>
+</div>
+<p class="step-desc">Calculate SHAP values to identify top-5 features driving the risk score.</p>
+<div class="output-tag">Out: [Attendance, GPA, Stress...]</div>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="step-item step-active">
+<div class="step-marker">4</div>
+<div class="step-content">
+<div class="step-title">
+<span>Label Generation</span>
+<i class="fa-solid fa-tags text-blue-500"></i>
+</div>
+<p class="step-desc">Map technical features to human-readable "Disengagement Indicators".</p>
+<div class="output-tag">Out: "Attendance Decline"</div>
+</div>
+</div>
+<!-- Step 5 -->
+<div class="step-item step-active">
+<div class="step-marker">5</div>
+<div class="step-content border-l-4 border-l-emerald-500">
+<div class="step-title">
+<span>Intervention Assignment</span>
+<i class="fa-solid fa-hand-holding-heart text-emerald-600"></i>
+</div>
+<p class="step-desc">Match dominant trigger to the intervention catalog using priority rules.</p>
+<div class="output-tag text-emerald-700 bg-emerald-50">Final: Engagement Counseling</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Logic Board -->
+<div class="logic-card">
+<div class="decor-circle"></div>
+<div class="logic-title">
+<i class="fa-solid fa-code-branch text-blue-400"></i>
+                Intervention Priority Map
+            </div>
+<p class="text-xs text-slate-400 mb-6">First-match wins logic ensures the most critical behavioral signal is addressed first.</p>
+<div class="rule-item">
+<span class="rule-number">01</span>
+<span class="rule-trigger"><i class="fa-regular fa-calendar-xmark mr-2"></i>Attendance</span>
+<i class="fa-solid fa-arrow-right rule-arrow"></i>
+<span class="rule-action">Engagement Counseling</span>
+<span class="priority-badge priority-1">P1</span>
+</div>
+<div class="rule-item">
+<span class="rule-number">02</span>
+<span class="rule-trigger"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Delay</span>
+<i class="fa-solid fa-arrow-right rule-arrow"></i>
+<span class="rule-action">Advisor + Deadline Ext.</span>
+<span class="priority-badge">P2</span>
+</div>
+<div class="rule-item">
+<span class="rule-number">03</span>
+<span class="rule-trigger"><i class="fa-solid fa-brain mr-2"></i>Stress</span>
+<i class="fa-solid fa-arrow-right rule-arrow"></i>
+<span class="rule-action">Mental Health Referral</span>
+<span class="priority-badge">P3</span>
+</div>
+<div class="rule-item">
+<span class="rule-number">04</span>
+<span class="rule-trigger"><i class="fa-solid fa-graduation-cap mr-2"></i>GPA/Acad</span>
+<i class="fa-solid fa-arrow-right rule-arrow"></i>
+<span class="rule-action">Peer Tutoring Program</span>
+<span class="priority-badge">P4</span>
+</div>
+<div class="rule-item">
+<span class="rule-number">05</span>
+<span class="rule-trigger"><i class="fa-solid fa-laptop-code mr-2"></i>LMS Logs</span>
+<i class="fa-solid fa-arrow-right rule-arrow"></i>
+<span class="rule-action">Digital Engagement Coach</span>
+<span class="priority-badge">P5</span>
+</div>
+<div class="rule-item">
+<span class="rule-number">06</span>
+<span class="rule-trigger"><i class="fa-solid fa-pause mr-2"></i>Inactivity</span>
+<i class="fa-solid fa-arrow-right rule-arrow"></i>
+<span class="rule-action">Proactive Mentor Check-in</span>
+<span class="priority-badge">P6</span>
+</div>
+<div class="mt-4 pt-4 border-t border-slate-700 flex items-center justify-between text-xs text-slate-400">
+<span><i class="fa-solid fa-bolt text-yellow-500 mr-1"></i> Trigger: Dominant Feature</span>
+<span class="mono-font">mode='first_match'</span>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

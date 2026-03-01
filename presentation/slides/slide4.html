@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Data Sources - BehAnalytics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            overflow: hidden;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            background-color: #f8fafc;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .side-panel {
+            width: 380px;
+            background-color: #ffffff;
+            border-left: 1px solid #e2e8f0;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.02);
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background-color: #eff6ff;
+            border-radius: 6px;
+            color: #3b82f6;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .title-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Custom Table Styling */
+        .data-table-container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            margin-top: 30px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 20px 24px;
+            background-color: #f8fafc;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table td {
+            padding: 24px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .dataset-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            font-size: 18px;
+        }
+
+        .stat-badge {
+            background-color: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #475569;
+            display: inline-block;
+        }
+
+        /* Chart Section */
+        .chart-container {
+            position: relative;
+            height: 240px;
+            width: 100%;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            margin-right: 10px;
+        }
+
+        .bg-grid-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 24px 24px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        /* Card Decoration */
+        .decor-blob {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background-color: #dbeafe;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            z-index: 0;
+            top: -100px;
+            right: -100px;
+        }
+    </style>
+</head>
+<body>
+<div class="slide-container">
+<!-- Background Pattern -->
+<div class="bg-grid-pattern"></div>
+<div class="decor-blob"></div>
+<!-- Main Content (Left) -->
+<div class="main-content">
+<div style="position: relative; z-index: 10;">
+<div class="header-badge">
+<i class="fa-solid fa-database mr-2"></i> Data &amp; Features
+                </div>
+<h1 class="text-4xl font-bold text-slate-900 mb-2 title-font">Data Sources</h1>
+<p class="text-slate-500 text-lg max-w-2xl">Three complementary datasets fused to create a 360° student view.</p>
+</div>
+<!-- Data Table -->
+<div class="data-table-container">
+<table class="data-table">
+<thead>
+<tr>
+<th style="width: 35%">Dataset Name</th>
+<th style="width: 15%">Volume</th>
+<th style="width: 10%">Columns</th>
+<th style="width: 40%">Role &amp; Description</th>
+</tr>
+</thead>
+<tbody>
+<!-- Row 1 -->
+<tr>
+<td>
+<div class="flex items-center">
+<div class="dataset-icon bg-blue-100 text-blue-600">
+<i class="fa-solid fa-user-graduate"></i>
+</div>
+<div>
+<p class="font-bold text-slate-800 text-sm">Student Dropout Records</p>
+<p class="text-xs text-slate-400 mt-1">Core Demographics</p>
+</div>
+</div>
+</td>
+<td><span class="stat-badge">10,000</span></td>
+<td><span class="font-mono text-slate-500 text-sm">19</span></td>
+<td>
+<p class="text-sm text-slate-600 leading-snug">
+<span class="font-semibold text-blue-600">Primary Source.</span> Contains demographics, academics, stress levels, and the target label.
+                                </p>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr>
+<td>
+<div class="flex items-center">
+<div class="dataset-icon bg-purple-100 text-purple-600">
+<i class="fa-solid fa-computer-mouse"></i>
+</div>
+<div>
+<p class="font-bold text-slate-800 text-sm">Learning Interaction Logs</p>
+<p class="text-xs text-slate-400 mt-1">LMS Activity</p>
+</div>
+</div>
+</td>
+<td><span class="stat-badge">9,000</span></td>
+<td><span class="font-mono text-slate-500 text-sm">22</span></td>
+<td>
+<p class="text-sm text-slate-600 leading-snug">
+<span class="font-semibold text-purple-600">Behavioral Signals.</span> Granular LMS data: time spent, clicks, video watches, attention score.
+                                </p>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr>
+<td>
+<div class="flex items-center">
+<div class="dataset-icon bg-emerald-100 text-emerald-600">
+<i class="fa-solid fa-school"></i>
+</div>
+<div>
+<p class="font-bold text-slate-800 text-sm">College Management</p>
+<p class="text-xs text-slate-400 mt-1">Institutional Data</p>
+</div>
+</div>
+</td>
+<td><span class="stat-badge">1,545</span></td>
+<td><span class="font-mono text-slate-500 text-sm">15</span></td>
+<td>
+<p class="text-sm text-slate-600 leading-snug">
+<span class="font-semibold text-emerald-600">Reference.</span> Supplementary academic records like GPA history, course load, and logins.
+                                </p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="mt-6 flex items-center gap-2 text-slate-400 text-sm">
+<i class="fa-solid fa-info-circle"></i>
+<p>Datasets are fused via unique <strong>Student_ID</strong> to generate the final feature matrix.</p>
+</div>
+</div>
+<!-- Side Panel (Right) -->
+<div class="side-panel">
+<h3 class="text-lg font-bold text-slate-900 title-font mb-1">Target Variable</h3>
+<p class="text-sm text-slate-500 mb-6">Binary Classification (Dropout)</p>
+<div class="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-6">
+<div class="chart-container">
+<canvas id="targetChart"></canvas>
+</div>
+</div>
+<div class="space-y-2">
+<div class="legend-item">
+<div class="flex items-center">
+<div class="legend-dot bg-slate-300"></div>
+<span class="text-sm font-medium text-slate-600">Retained</span>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-slate-800">7,646</p>
+<p class="text-xs text-slate-400">76.5%</p>
+</div>
+</div>
+<div class="legend-item" style="border-bottom: none;">
+<div class="flex items-center">
+<div class="legend-dot bg-red-500"></div>
+<span class="text-sm font-medium text-slate-600">Dropped Out</span>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-slate-800">2,354</p>
+<p class="text-xs text-slate-400">23.5%</p>
+</div>
+</div>
+</div>
+<div class="mt-auto pt-6 border-t border-slate-100">
+<div class="flex items-start gap-3">
+<i class="fa-solid fa-scale-unbalanced text-slate-400 mt-1"></i>
+<div>
+<p class="text-xs font-bold text-slate-700 uppercase">Imbalance Note</p>
+<p class="text-xs text-slate-500 mt-1">Class imbalance (~1:3) requires specific handling strategies (e.g., SMOTE) during training.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+        const ctx = document.getElementById('targetChart').getContext('2d');
+        const targetChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Retained', 'Dropped Out'],
+                datasets: [{
+                    data: [76.5, 23.5],
+                    backgroundColor: [
+                        '#cbd5e1', // Slate 300
+                        '#ef4444'  // Red 500
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw + '%';
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [{
+                id: 'centerText',
+                beforeDraw: function(chart) {
+                    var width = chart.width,
+                        height = chart.height,
+                        ctx = chart.ctx;
+                    
+                    ctx.restore();
+                    var fontSize = (height / 100).toFixed(2);
+                    ctx.font = "bold " + fontSize + "em sans-serif";
+                    ctx.textBaseline = "middle";
+                    ctx.fillStyle = "#1e293b";
+                    
+                    var text = "10K",
+                        textX = Math.round((width - ctx.measureText(text).width) / 2),
+                        textY = height / 2;
+                    
+                    ctx.fillText(text, textX, textY);
+                    
+                    ctx.font = "normal " + (fontSize*0.4).toFixed(2) + "em sans-serif";
+                    ctx.fillStyle = "#64748b";
+                    var subtext = "Total Records",
+                        subtextX = Math.round((width - ctx.measureText(subtext).width) / 2),
+                        subtextY = height / 2 + 20;
+                        
+                    ctx.fillText(subtext, subtextX, subtextY);
+                    ctx.save();
+                }
+            }]
+        });
+    </script>
+</body>
+</html>

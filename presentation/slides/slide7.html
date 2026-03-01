@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dual-Threshold System - BehAnalytics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            overflow: hidden;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-color: #f8fafc;
+            padding: 50px 60px;
+        }
+
+        .title-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Header */
+        .header-section {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background-color: #e0e7ff;
+            border-radius: 6px;
+            color: #4338ca;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Main Content Grid */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px 1fr;
+            gap: 24px;
+            flex: 1;
+            align-items: stretch;
+        }
+
+        /* Mode Cards */
+        .mode-card {
+            background-color: white;
+            border-radius: 16px;
+            padding: 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s ease;
+        }
+
+        .mode-card-header {
+            padding: 24px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .mode-card-body {
+            padding: 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Balanced Theme */
+        .theme-balanced .mode-card-header {
+            background-color: #f0f9ff;
+            border-bottom-color: #e0f2fe;
+        }
+        .theme-balanced .highlight-text { color: #0284c7; }
+        .theme-balanced .threshold-badge { background-color: #0284c7; color: white; }
+        .theme-balanced .metric-bar-fill { background-color: #38bdf8; }
+
+        /* High Recall Theme */
+        .theme-recall .mode-card-header {
+            background-color: #fef2f2;
+            border-bottom-color: #fee2e2;
+        }
+        .theme-recall .highlight-text { color: #dc2626; }
+        .theme-recall .threshold-badge { background-color: #dc2626; color: white; }
+        .theme-recall .metric-bar-fill { background-color: #f87171; }
+
+        .threshold-badge {
+            font-family: 'Space Mono', monospace;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .use-case-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 12px;
+            background-color: white;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Metrics */
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+            width: 80px;
+        }
+
+        .metric-bar-bg {
+            flex: 1;
+            height: 6px;
+            background-color: #f1f5f9;
+            border-radius: 3px;
+            margin: 0 12px;
+            overflow: hidden;
+        }
+
+        .metric-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #334155;
+            width: 50px;
+            text-align: right;
+            font-feature-settings: "tnum";
+        }
+
+        /* Objective Function Box */
+        .obj-box {
+            background-color: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: auto;
+        }
+        
+        .obj-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .obj-code {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            color: #475569;
+            line-height: 1.4;
+        }
+
+        /* Center Visual */
+        .center-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+        }
+
+        .chart-wrapper {
+            width: 100%;
+            height: 280px;
+            position: relative;
+        }
+
+        .tradeoff-note {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        /* Background Decor */
+        .bg-decor-left {
+            position: absolute;
+            bottom: -50px;
+            left: -50px;
+            width: 300px;
+            height: 300px;
+            background-color: #e0f2fe;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.5;
+        }
+
+        .bg-decor-right {
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 300px;
+            height: 300px;
+            background-color: #fee2e2;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+<div class="slide-container">
+<div class="bg-decor-left"></div>
+<div class="bg-decor-right"></div>
+<!-- Header -->
+<div class="header-section relative z-10">
+<div>
+<div class="header-badge">
+<i class="fa-solid fa-sliders mr-2"></i> Operational Strategy
+                </div>
+<h1 class="text-4xl font-bold text-slate-900 title-font">Dual-Threshold System</h1>
+<p class="text-slate-500 text-lg mt-2">Evaluation vs. Deployment: Optimizing for the right outcome.</p>
+</div>
+</div>
+<!-- Main Comparison Grid -->
+<div class="comparison-grid relative z-10">
+<!-- Left Card: Balanced Mode -->
+<div class="mode-card theme-balanced">
+<div class="mode-card-header">
+<div class="flex justify-between items-start">
+<div>
+<h2 class="text-xl font-bold text-slate-800 title-font">Balanced Mode</h2>
+<div class="use-case-tag text-sky-700">
+<i class="fa-solid fa-scale-balanced"></i>
+<span>General Evaluation</span>
+</div>
+</div>
+<span class="threshold-badge">θ = 0.2884</span>
+</div>
+</div>
+<div class="mode-card-body">
+<div class="mb-6">
+<p class="text-4xl font-bold text-slate-800 title-font">75.4%</p>
+<p class="text-xs text-slate-500 font-medium uppercase tracking-wide mt-1">Recall Rate</p>
+</div>
+<!-- Metrics -->
+<div class="space-y-1 mb-6">
+<div class="metric-row">
+<span class="metric-label">Precision</span>
+<div class="metric-bar-bg"><div class="metric-bar-fill" style="width: 45.5%"></div></div>
+<span class="metric-value">45.5%</span>
+</div>
+<div class="metric-row">
+<span class="metric-label">Accuracy</span>
+<div class="metric-bar-bg"><div class="metric-bar-fill" style="width: 72.9%"></div></div>
+<span class="metric-value">72.9%</span>
+</div>
+<div class="metric-row">
+<span class="metric-label">F1 Score</span>
+<div class="metric-bar-bg"><div class="metric-bar-fill" style="width: 56.8%"></div></div>
+<span class="metric-value">56.8%</span>
+</div>
+</div>
+<!-- Objective -->
+<div class="obj-box">
+<p class="obj-title"><i class="fa-solid fa-crosshairs mr-1"></i> Optimization Objective</p>
+<p class="obj-code">0.35×P + 0.20×R + 0.45×F1</p>
+<p class="obj-code text-sky-600 mt-1">Constraint: Recall ≥ 0.55</p>
+</div>
+</div>
+</div>
+<!-- Center: Visual Comparison -->
+<div class="center-panel">
+<h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Profile Comparison</h3>
+<div class="chart-wrapper">
+<canvas id="comparisonChart"></canvas>
+</div>
+<div class="tradeoff-note">
+<p class="text-xs text-slate-600 leading-relaxed">
+<strong class="block text-slate-800 mb-1">The Strategic Trade-off</strong>
+                        Balanced mode optimizes for report accuracy, while High Recall creates a "safety net" to ensure almost no at-risk student is missed.
+                    </p>
+</div>
+</div>
+<!-- Right Card: High Recall -->
+<div class="mode-card theme-recall">
+<div class="mode-card-header">
+<div class="flex justify-between items-start">
+<div>
+<h2 class="text-xl font-bold text-slate-800 title-font">High Recall</h2>
+<div class="use-case-tag text-red-700">
+<i class="fa-solid fa-life-ring"></i>
+<span>Deployment</span>
+</div>
+</div>
+<span class="threshold-badge">θ = 0.1219</span>
+</div>
+</div>
+<div class="mode-card-body">
+<div class="mb-6">
+<p class="text-4xl font-bold text-red-600 title-font">91.9%</p>
+<p class="text-xs text-red-400 font-medium uppercase tracking-wide mt-1">Recall Rate</p>
+</div>
+<!-- Metrics -->
+<div class="space-y-1 mb-6">
+<div class="metric-row">
+<span class="metric-label">Precision</span>
+<div class="metric-bar-bg"><div class="metric-bar-fill" style="width: 32.2%"></div></div>
+<span class="metric-value">32.2%</span>
+</div>
+<div class="metric-row">
+<span class="metric-label">Accuracy</span>
+<div class="metric-bar-bg"><div class="metric-bar-fill" style="width: 52.5%"></div></div>
+<span class="metric-value">52.5%</span>
+</div>
+<div class="metric-row">
+<span class="metric-label">F1 Score</span>
+<div class="metric-bar-bg"><div class="metric-bar-fill" style="width: 47.7%"></div></div>
+<span class="metric-value">47.7%</span>
+</div>
+</div>
+<!-- Objective -->
+<div class="obj-box">
+<p class="obj-title"><i class="fa-solid fa-crosshairs mr-1"></i> Optimization Objective</p>
+<p class="obj-code">0.20×P + 0.50×R + 0.30×F1</p>
+<p class="obj-code text-red-600 mt-1">Constraint: Recall ≥ 0.70</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+        const ctx = document.getElementById('comparisonChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Recall', 'Precision', 'Accuracy', 'F1 Score'],
+                datasets: [{
+                    label: 'Balanced',
+                    data: [75.37, 45.51, 72.95, 56.75],
+                    fill: true,
+                    backgroundColor: 'rgba(56, 189, 248, 0.2)', // Sky 400
+                    borderColor: '#0284c7', // Sky 600
+                    pointBackgroundColor: '#0284c7',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#0284c7'
+                }, {
+                    label: 'High Recall',
+                    data: [91.93, 32.19, 52.50, 47.69],
+                    fill: true,
+                    backgroundColor: 'rgba(248, 113, 113, 0.2)', // Red 400
+                    borderColor: '#dc2626', // Red 600
+                    pointBackgroundColor: '#dc2626',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#dc2626'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                elements: {
+                    line: { borderWidth: 2 }
+                },
+                scales: {
+                    r: {
+                        angleLines: { color: '#e2e8f0' },
+                        grid: { color: '#f1f5f9' },
+                        pointLabels: {
+                            font: { family: 'Inter', size: 11, weight: '600' },
+                            color: '#64748b'
+                        },
+                        ticks: { display: false, max: 100 }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { family: 'Inter', size: 11 },
+                            color: '#475569',
+                            usePointStyle: true,
+                            boxWidth: 8
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

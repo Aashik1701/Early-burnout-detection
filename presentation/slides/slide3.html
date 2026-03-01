@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>System Requirements - BehAnalytics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            overflow: hidden;
+        }
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-color: #f8fafc;
+            padding: 60px 80px;
+        }
+        
+        .header {
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 24px;
+            flex: 1;
+            z-index: 10;
+        }
+
+        .req-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .req-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .req-card:nth-child(1)::before { background-color: #3b82f6; } /* Blue - Early Detection */
+        .req-card:nth-child(2)::before { background-color: #10b981; } /* Green - Actionable */
+        .req-card:nth-child(3)::before { background-color: #f59e0b; } /* Amber - Dual Modes */
+        .req-card:nth-child(4)::before { background-color: #8b5cf6; } /* Purple - Transparency */
+        .req-card:nth-child(5)::before { background-color: #ef4444; } /* Red - Scalability */
+        .req-card:nth-child(6)::before { background-color: #6366f1; } /* Indigo - Resource */
+
+        .icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+
+        .bg-blue-light { background-color: #eff6ff; color: #3b82f6; }
+        .bg-green-light { background-color: #ecfdf5; color: #10b981; }
+        .bg-amber-light { background-color: #fffbeb; color: #f59e0b; }
+        .bg-purple-light { background-color: #f3e8ff; color: #8b5cf6; }
+        .bg-red-light { background-color: #fef2f2; color: #ef4444; }
+        .bg-indigo-light { background-color: #e0e7ff; color: #6366f1; }
+
+        .title-font { font-family: 'Space Grotesk', sans-serif; }
+        
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 600px;
+            height: 720px;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        .corner-accent {
+            position: absolute;
+            bottom: -80px;
+            left: -80px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background-color: #e0f2fe;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+<div class="slide-container">
+<!-- Background Elements -->
+<div class="bg-pattern">
+<svg height="100%" width="100%">
+<defs>
+<pattern height="20" id="dots" patternunits="userSpaceOnUse" width="20" x="0" y="0">
+<circle cx="2" cy="2" fill="#cbd5e1" r="1"></circle>
+</pattern>
+</defs>
+<rect fill="url(#dots)" height="100%" width="100%"></rect>
+</svg>
+</div>
+<div class="corner-accent"></div>
+<!-- Header -->
+<div class="header">
+<div class="flex items-center gap-3 mb-2">
+<div class="h-1 w-10 bg-blue-600 rounded-full"></div>
+<p class="text-blue-600 font-bold uppercase tracking-widest text-sm">Problem Statement</p>
+</div>
+<h1 class="text-4xl font-bold text-slate-900 title-font">System Requirements</h1>
+<p class="text-slate-500 text-lg mt-2 max-w-3xl">To effectively solve early dropout, the system must deliver on these six core capabilities.</p>
+</div>
+<!-- Cards Grid -->
+<div class="grid-container">
+<!-- Card 1 -->
+<div class="req-card">
+<div class="icon-box bg-blue-light">
+<i class="fa-solid fa-stopwatch"></i>
+</div>
+<h3 class="text-xl font-bold text-slate-800 mb-2 title-font">Early Detection</h3>
+<p class="text-slate-600 text-sm leading-relaxed">Flag students using real-time behavioural signals throughout the semester, not just waiting for end-of-term grades.</p>
+</div>
+<!-- Card 2 -->
+<div class="req-card">
+<div class="icon-box bg-green-light">
+<i class="fa-solid fa-clipboard-check"></i>
+</div>
+<h3 class="text-xl font-bold text-slate-800 mb-2 title-font">Actionable Output</h3>
+<p class="text-slate-600 text-sm leading-relaxed">Every flagged student receives a personalized intervention recommendation tailored to their specific risk profile.</p>
+</div>
+<!-- Card 3 -->
+<div class="req-card">
+<div class="icon-box bg-amber-light">
+<i class="fa-solid fa-sliders"></i>
+</div>
+<h3 class="text-xl font-bold text-slate-800 mb-2 title-font">Dual Operating Modes</h3>
+<p class="text-slate-600 text-sm leading-relaxed">Switch between 'Balanced' mode for auditing/reporting and 'High-Recall' mode for proactive student welfare deployment.</p>
+</div>
+<!-- Card 4 -->
+<div class="req-card">
+<div class="icon-box bg-purple-light">
+<i class="fa-solid fa-file-contract"></i>
+</div>
+<h3 class="text-xl font-bold text-slate-800 mb-2 title-font">Transparency</h3>
+<p class="text-slate-600 text-sm leading-relaxed">Per-student behavioral triggers explain exactly *why* the model flagged them, removing the "black box" problem.</p>
+</div>
+<!-- Card 5 -->
+<div class="req-card">
+<div class="icon-box bg-red-light">
+<i class="fa-solid fa-server"></i>
+</div>
+<h3 class="text-xl font-bold text-slate-800 mb-2 title-font">Scalability</h3>
+<p class="text-slate-600 text-sm leading-relaxed">Batch score 10,000+ students instantly and visualize results in a dashboard designed for non-technical staff.</p>
+</div>
+<!-- Card 6 -->
+<div class="req-card">
+<div class="icon-box bg-indigo-light">
+<i class="fa-solid fa-user-clock"></i>
+</div>
+<h3 class="text-xl font-bold text-slate-800 mb-2 title-font">Resource Awareness</h3>
+<p class="text-slate-600 text-sm leading-relaxed">Plan outreach based on actual counselor capacity (weekly slots), prioritizing the most urgent interventions.</p>
+</div>
+</div>
+</div>
+</body>
+</html>

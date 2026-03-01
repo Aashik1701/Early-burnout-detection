@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Model Results - BehAnalytics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            overflow: hidden;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            background-color: #f8fafc;
+        }
+
+        .left-panel {
+            flex: 0 0 60%;
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .right-panel {
+            flex: 0 0 40%;
+            background-color: #0f172a; /* Slate 900 */
+            color: white;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background-color: #eff6ff;
+            border-radius: 6px;
+            color: #3b82f6;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .title-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Leaderboard Table */
+        .leaderboard-container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table th {
+            text-align: left;
+            padding: 16px 20px;
+            background-color: #f8fafc;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .leaderboard-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+
+        .leaderboard-table tr.winner-row {
+            background-color: #f0fdf4;
+        }
+
+        .leaderboard-table tr.winner-row td {
+            color: #166534;
+            font-weight: 600;
+            border-bottom: 1px solid #dcfce7;
+        }
+
+        .rank-badge {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #f1f5f9;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .winner-row .rank-badge {
+            background-color: #166534;
+            color: white;
+        }
+
+        /* Metric Cards */
+        .metric-card {
+            background-color: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            color: #3b82f6; /* Blue 500 */
+        }
+        
+        .metric-label {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .metric-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        /* Formula Box */
+        .formula-box {
+            background-color: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            color: #475569;
+            margin-top: 20px;
+            display: inline-block;
+        }
+
+        /* Background Pattern */
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.05;
+            background-image: radial-gradient(circle, #ffffff 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .right-bg-decor {
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background-color: #1e293b;
+            filter: blur(60px);
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="slide-container">
+<!-- Left Panel: The Tournament -->
+<div class="left-panel">
+<div class="mb-6">
+<div class="header-badge">
+<i class="fa-solid fa-trophy mr-2"></i> Model Selection
+            </div>
+<h1 class="text-4xl font-bold text-slate-900 mb-2 title-font">Training &amp; Results</h1>
+<p class="text-slate-500 text-lg">Comprehensive tournament comparing 8 candidate configurations.</p>
+</div>
+<div class="flex items-center gap-4 mb-4">
+<div class="bg-blue-50 text-blue-700 px-3 py-1 rounded text-xs font-bold uppercase tracking-wide">
+                Selection Criteria
+            </div>
+<p class="text-sm text-slate-500 font-medium">Composite Score Maximization</p>
+</div>
+<!-- Formula Display -->
+<div class="mb-6">
+<div class="formula-box">
+                Composite = (0.40 × AUC) + (0.45 × F1) + (0.15 × Recall)
+            </div>
+<p class="text-xs text-slate-400 mt-2 italic">
+                *Weighted to balance discrimination power (AUC) with precision/recall trade-offs (F1).
+            </p>
+</div>
+<!-- Leaderboard -->
+<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">Tournament Leaderboard (Top 4)</h3>
+<div class="leaderboard-container">
+<table class="leaderboard-table">
+<thead>
+<tr>
+<th width="10%">Rank</th>
+<th width="35%">Model</th>
+<th width="20%">Strategy</th>
+<th width="20%">Composite</th>
+<th width="15%">AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="winner-row">
+<td><div class="rank-badge">1</div></td>
+<td>
+<div class="flex items-center gap-2">
+<i class="fa-solid fa-crown text-yellow-500 text-sm"></i>
+                                RandomForest
+                            </div>
+</td>
+<td><span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-bold">SMOTE</span></td>
+<td>0.6915</td>
+<td>0.8026</td>
+</tr>
+<tr>
+<td><div class="rank-badge">2</div></td>
+<td>CatBoost</td>
+<td><span class="text-slate-400 text-xs">None</span></td>
+<td>0.6885</td>
+<td>0.8071</td>
+</tr>
+<tr>
+<td><div class="rank-badge">3</div></td>
+<td>StackingEnsemble</td>
+<td><span class="text-slate-400 text-xs">None</span></td>
+<td>0.6882</td>
+<td>0.8047</td>
+</tr>
+<tr>
+<td><div class="rank-badge">4</div></td>
+<td>XGBoost</td>
+<td><span class="text-slate-400 text-xs">None</span></td>
+<td>0.6875</td>
+<td>0.8027</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="mt-4 flex items-center gap-2 text-slate-400 text-xs">
+<i class="fa-solid fa-check-circle text-green-500"></i>
+<p><strong>Winner Logic:</strong> RandomForest provided the best stability across F1 and Recall, crucial for minimizing missed at-risk students.</p>
+</div>
+</div>
+<!-- Right Panel: The Winner -->
+<div class="right-panel">
+<div class="bg-pattern"></div>
+<div class="right-bg-decor"></div>
+<div style="position: relative; z-index: 10;">
+<div class="flex items-center gap-3 mb-8">
+<div class="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+<i class="fa-solid fa-award text-white text-xl"></i>
+</div>
+<div>
+<p class="text-blue-400 text-xs font-bold uppercase tracking-wider mb-1">Champion Model</p>
+<h2 class="text-2xl font-bold text-white title-font">RandomForest</h2>
+<p class="text-slate-400 text-sm">+ SMOTE Oversampling</p>
+</div>
+</div>
+<div class="mb-2">
+<p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">Key Performance Metrics</p>
+</div>
+<!-- Metric 1 -->
+<div class="metric-card">
+<div>
+<div class="metric-value">0.8044</div>
+<div class="metric-label">ROC-AUC Score</div>
+</div>
+<div class="metric-icon">
+<i class="fa-solid fa-chart-area"></i>
+</div>
+</div>
+<!-- Metric 2 -->
+<div class="metric-card">
+<div>
+<div class="metric-value">0.5709</div>
+<div class="metric-label">PR-AUC (Precision-Recall)</div>
+</div>
+<div class="metric-icon">
+<i class="fa-solid fa-bullseye"></i>
+</div>
+</div>
+<!-- Metric 3 -->
+<div class="metric-card">
+<div>
+<div class="metric-value text-emerald-400">0.1402</div>
+<div class="metric-label">Brier Score (Calibration)</div>
+</div>
+<div class="metric-icon bg-emerald-500/10 text-emerald-400">
+<i class="fa-solid fa-scale-balanced"></i>
+</div>
+</div>
+<div class="mt-auto pt-6 border-t border-slate-700">
+<div class="flex items-start gap-3">
+<i class="fa-solid fa-circle-info text-blue-400 mt-1"></i>
+<p class="text-slate-300 text-xs leading-relaxed">
+<strong>Calibration Note:</strong> A Brier score of 0.14 indicates raw probabilities are trustworthy. No post-hoc calibration (Sigmoid/Isotonic) was required.
+                    </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

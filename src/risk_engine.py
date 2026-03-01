@@ -1,40 +1,150 @@
+"""
+BehAnalytics — Risk Scoring & Intervention Engine.
+
+Adaptive risk bins, actionable trigger extraction (with
+non-actionable keyword blocklist), and rank-order intervention
+matching.
+"""
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
+
+import numpy as np
+import pandas as pd
+
+# ---------------------------------------------------------------------------
+# Non-actionable feature keywords (remain in model, hidden from triggers)
+# ---------------------------------------------------------------------------
+NON_ACTIONABLE_KEYWORDS: List[str] = [
+    "family_income", "travel_time", "age", "gender", "part_time_job",
+    "scholarship", "internet_access", "parental_education",
+    "department", "semester",
+]
+
+# ---------------------------------------------------------------------------
+# Intervention rules — checked in priority order
+# ---------------------------------------------------------------------------
+INTERVENTION_RULES: List[Tuple[List[str], str]] = [
+    (["attendance"],
+     "Engagement counselling + attendance monitoring plan"),
+    (["assignment_delay", "delay", "assignment_completion"],
+     "Schedule academic-advisor meeting; consider deadline extension"),
+    (["stress", "sentiment"],
+     "Refer to student well-being / mental-health services"),
+    (["study_hours", "gpa", "cgpa", "semester_gpa"],
+     "Enrol in peer-tutoring or supplemental-instruction programme"),
+    (["time_spent", "pages_visited", "video_watched", "click_events", "attention_score"],
+     "Digital engagement coaching — improve learning platform usage"),
+    (["days_since_last", "success_rate", "session_count"],
+     "Proactive outreach — schedule regular check-ins with mentor"),
+]
 
 
-def risk_level_from_score(score_0_100: float) -> str:
-    if score_0_100 <= 33:
+# ---------------------------------------------------------------------------
+# Risk scoring
+# ---------------------------------------------------------------------------
+
+def adaptive_risk_bins(
+    risk_scores: pd.Series,
+    optimal_threshold: float,
+    high_percentile: int = 85,
+) -> Tuple[float, float]:
+    """Return (low_cutoff, high_cutoff) for adaptive risk bins.
+
+    * Low  : score ≤ threshold_score  (≈ 30)
+    * Medium: threshold_score < score ≤ 85th-percentile
+    * High : above 85th-percentile
+    """
+    thresh_score = round(optimal_threshold * 100, 1)
+    high_cutoff = float(np.percentile(risk_scores, high_percentile))
+    return thresh_score, high_cutoff
+
+
+def risk_level_from_score(
+    score: float,
+    thresh_score: float,
+    high_cutoff: float,
+) -> str:
+    """Assign risk level using adaptive bin boundaries."""
+    if score <= thresh_score:
         return "Low"
-    if score_0_100 <= 66:
+    elif score <= high_cutoff:
         return "Medium"
     return "High"
 
 
-def recommend_intervention(triggers: List[str], risk_level: str) -> str:
-    trigger_text = " ".join(t.lower() for t in triggers)
+# ---------------------------------------------------------------------------
+# Trigger extraction
+# ---------------------------------------------------------------------------
 
-    if "assignment_delay" in trigger_text:
-        return "Notify academic advisor and provide 48-hour assignment extension with follow-up check-in."
-    if "attendance" in trigger_text:
-        return "Schedule attendance counseling and weekly mentor tracking for the next month."
-    if "stress" in trigger_text or "sentiment" in trigger_text:
-        return "Refer to wellbeing counselor and enable low-load study plan for 2 weeks."
+def _is_actionable(fname: str) -> bool:
+    fname_lower = fname.lower()
+    return not any(kw in fname_lower for kw in NON_ACTIONABLE_KEYWORDS)
 
+
+def extract_triggers(
+    X_full_proc: np.ndarray,
+    feature_names: np.ndarray,
+    importances: np.ndarray,
+    top_k: int = 5,
+) -> List[str]:
+    """Return a list of comma-separated top-K actionable triggers per student."""
+    actionable_mask = np.array([_is_actionable(f) for f in feature_names])
+
+    medians = np.median(X_full_proc, axis=0)
+    deviations = np.abs(X_full_proc - medians)
+    weighted = deviations * importances
+
+    # Zero-out non-actionable features
+    weighted_filtered = weighted.copy()
+    weighted_filtered[:, ~actionable_mask] = 0.0
+
+    triggers: List[str] = []
+    for i in range(X_full_proc.shape[0]):
+        top_idxs = np.argsort(weighted_filtered[i])[::-1][:top_k]
+        names = [feature_names[j].split("__")[-1] for j in top_idxs]
+        triggers.append(", ".join(names))
+    return triggers
+
+
+# ---------------------------------------------------------------------------
+# Intervention recommendation
+# ---------------------------------------------------------------------------
+
+def recommend_intervention(triggers: str, risk_level: str) -> str:
+    """Rank-order matching: walk triggers most-important → least, first hit wins."""
+    trigger_list = [t.strip().lower() for t in triggers.split(",")]
+
+    for trigger in trigger_list:
+        for keywords, action in INTERVENTION_RULES:
+            if any(kw in trigger for kw in keywords):
+                if risk_level == "High":
+                    return f"URGENT — {action}"
+                return action
+
+    # Fallback
     if risk_level == "High":
-        return "Initiate immediate advisor intervention and weekly progress monitoring."
-    if risk_level == "Medium":
-        return "Assign faculty mentor and monitor behavioural indicators bi-weekly."
-    return "Continue current support plan with monthly progress review."
+        return "URGENT — General academic-support check-in with counsellor"
+    return "General academic-support check-in"
 
 
-def build_prediction_payload(probability: float, triggers: List[str]) -> Dict[str, object]:
+# ---------------------------------------------------------------------------
+# Convenience: build full prediction payload
+# ---------------------------------------------------------------------------
+
+def build_prediction_payload(
+    probability: float,
+    triggers: List[str],
+    thresh_score: float,
+    high_cutoff: float,
+) -> Dict[str, object]:
     score = round(probability * 100, 2)
-    level = risk_level_from_score(score)
+    level = risk_level_from_score(score, thresh_score, high_cutoff)
+    triggers_str = ", ".join(triggers)
     return {
         "dropout_probability": round(probability, 4),
         "risk_score": score,
         "burnout_risk_level": level,
-        "key_behavioural_triggers": triggers,
-        "recommended_intervention_strategy": recommend_intervention(triggers, level),
+        "key_behavioural_triggers": triggers_str,
+        "recommended_intervention_strategy": recommend_intervention(triggers_str, level),
     }

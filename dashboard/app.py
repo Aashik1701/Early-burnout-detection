@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -92,12 +93,12 @@ with st.sidebar:
         step=5,
     )
 
-    default_threshold_for_mode = float(mode_view.get("threshold", metrics.get("threshold", 0.5))) if mode_metrics else float(metrics.get("threshold", 0.5))
+    selected_mode_threshold = float(mode_metrics.get(mode, {}).get("threshold", metrics.get("threshold", 0.5)))
     simulator_threshold = st.slider(
         "What-if threshold simulator",
         min_value=0.01,
         max_value=0.99,
-        value=max(0.01, min(0.99, default_threshold_for_mode)),
+        value=max(0.01, min(0.99, selected_mode_threshold)),
         step=0.01,
         help="Simulates how many students would be flagged at this probability threshold.",
     )
@@ -254,10 +255,14 @@ with tabs[0]:
         ranked = filtered.sort_values("risk_score", ascending=False)
         outreach_n = max(1, int(len(ranked) * outreach_pct / 100.0))
         outreach_df = ranked.head(outreach_n)
+        recommended_threshold = float(outreach_df["dropout_probability"].min())
         outreach_high = int((outreach_df["burnout_risk_level"] == "High").sum())
         outreach_medium = int((outreach_df["burnout_risk_level"] == "Medium").sum())
         outreach_urgent = int(
             outreach_df["recommended_intervention_strategy"].fillna("").str.contains("URGENT", case=False).sum()
+        )
+        outreach_high_coverage = (
+            (outreach_df["burnout_risk_level"] == "High").mean() * 100.0 if len(outreach_df) else 0.0
         )
 
         p1, p2, p3, p4 = st.columns(4)
@@ -269,6 +274,18 @@ with tabs[0]:
             metric_block("Medium-risk in outreach", f"{outreach_medium:,}")
         with p4:
             metric_block("Urgent cases in outreach", f"{outreach_urgent:,}")
+
+        r1, r2, r3 = st.columns(3)
+        with r1:
+            metric_block("Recommended threshold", f"{recommended_threshold:.4f}")
+        with r2:
+            metric_block("Expected flagged @recommended", f"{outreach_n:,}")
+        with r3:
+            metric_block("High-risk share @recommended", f"{outreach_high_coverage:.1f}%")
+
+        st.success(
+            f"Recommended operating threshold for {outreach_pct}% outreach capacity: {recommended_threshold:.4f}."
+        )
 
         st.caption("Outreach set is computed from highest risk scores in the current filtered cohort.")
     else:
@@ -304,6 +321,50 @@ with tabs[0]:
         st.caption(
             f"Compared with current {mode} threshold ({default_mode_threshold:.4f}), flagged count change is {flagged_delta:+d}."
         )
+
+        sweep_thresholds = np.round(np.arange(0.10, 0.91, 0.05), 2)
+        sweep_rows = []
+        for t in sweep_thresholds:
+            flagged_count_t = int((filtered["dropout_probability"] >= t).sum())
+            flagged_rate_t = (flagged_count_t / len(filtered) * 100.0) if len(filtered) else 0.0
+            high_cov_t = (
+                (high_subset["dropout_probability"] >= t).mean() * 100.0
+                if len(high_subset)
+                else 0.0
+            )
+            sweep_rows.append(
+                {
+                    "Threshold": t,
+                    "Flagged Rate (%)": flagged_rate_t,
+                    "High-risk Coverage (%)": high_cov_t,
+                }
+            )
+
+        sweep_df = pd.DataFrame(sweep_rows)
+        sweep_long = sweep_df.melt(
+            id_vars="Threshold",
+            value_vars=["Flagged Rate (%)", "High-risk Coverage (%)"],
+            var_name="Curve",
+            value_name="Value",
+        )
+
+        sweep_fig = px.line(
+            sweep_long,
+            x="Threshold",
+            y="Value",
+            color="Curve",
+            markers=True,
+            title="Threshold Sweep: Load vs Coverage",
+        )
+        sweep_fig.add_vline(
+            x=simulator_threshold,
+            line_width=2,
+            line_dash="dash",
+            line_color="gray",
+            annotation_text=f"Simulator {simulator_threshold:.2f}",
+            annotation_position="top right",
+        )
+        st.plotly_chart(sweep_fig, use_container_width=True)
     else:
         st.info("No rows after filtering.")
 

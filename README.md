@@ -328,7 +328,9 @@ streamlit run dashboard/app.py
 - Mode toggle (`balanced` vs `high_recall`)
 - Balanced vs high-recall trade-off comparison chart
 - Urgent-only intervention filter and outreach capacity planner
+- Auto recommended threshold by outreach capacity
 - What-if threshold simulator for flagged-load planning
+- Threshold sweep chart (flagged load vs high-risk coverage)
 - Risk-level distribution and risk-score histogram
 - Top behavioural triggers chart
 - Intervention strategy mix visualization

@@ -10,8 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 ARTIFACTS = ROOT / "artifacts"
 PREDICTIONS_PATH = ARTIFACTS / "predictions.csv"
 METRICS_PATH = ARTIFACTS / "metrics.json"
+DROPOUT_SRC_PATH = ROOT / "data" / "student_dropout_dataset_v3.csv"
 
-st.set_page_config(page_title="BehAnalytics Dashboard", page_icon="🎓", layout="wide")
+st.set_page_config(page_title="DASHBOARD", page_icon="🎓", layout="wide")
 
 
 @st.cache_data(show_spinner=False)
@@ -29,6 +30,19 @@ def load_metrics() -> dict:
         st.stop()
     with METRICS_PATH.open("r", encoding="utf-8") as f:
         return json.load(f)
+
+
+@st.cache_data(show_spinner=False)
+def load_cohort_data() -> pd.DataFrame | None:
+    """Load source dropout dataset for cohort dimensions and merge with predictions."""
+    if not DROPOUT_SRC_PATH.exists():
+        return None
+    src = pd.read_csv(DROPOUT_SRC_PATH)
+    cohort_cols = ["Student_ID"]
+    for c in ["Department", "Semester", "Gender", "Part_Time_Job", "Age"]:
+        if c in src.columns:
+            cohort_cols.append(c)
+    return src[cohort_cols].drop_duplicates(subset=["Student_ID"])
 
 
 def parse_triggers(series: pd.Series) -> pd.Series:
@@ -196,7 +210,7 @@ if len(available_modes) >= 2:
         with d3:
             metric_block("Threshold shift", f"{h.get('threshold', 0.0) - b.get('threshold', 0.0):+.4f}")
 
-tabs = st.tabs(["Overview", "Action Queue", "Student Detail"])
+tabs = st.tabs(["Overview", "Action Queue", "Student Detail", "Intervention Planner", "Program Impact", "Cohort Insights"])
 
 with tabs[0]:
     left, right = st.columns(2)
@@ -415,6 +429,280 @@ with tabs[2]:
         st.markdown(f"**Recommended intervention:** {selected_row['recommended_intervention_strategy']}")
     else:
         st.info("No rows after filtering.")
+
+# ── Tab 4: Intervention Planner ──────────────────────────────────────
+with tabs[3]:
+    st.subheader("Intervention Planner")
+    st.caption("Convert risk into a concrete outreach plan with counselor assignments.")
+
+    if len(filtered):
+        ip1, ip2 = st.columns(2)
+        with ip1:
+            num_counselors = st.number_input("Available counselors", min_value=1, max_value=100, value=5, step=1)
+        with ip2:
+            slots_per_counselor = st.number_input("Weekly contact slots per counselor", min_value=1, max_value=50, value=10, step=1)
+
+        total_weekly_capacity = int(num_counselors * slots_per_counselor)
+
+        # Build prioritized queue
+        planner_df = (
+            filtered[
+                ["Student_ID", "dropout_probability", "risk_score", "burnout_risk_level",
+                 "recommended_intervention_strategy"]
+            ]
+            .sort_values("risk_score", ascending=False)
+            .reset_index(drop=True)
+        )
+        planner_df["Urgency"] = planner_df["recommended_intervention_strategy"].fillna("").apply(
+            lambda x: "URGENT" if "URGENT" in x.upper() else "Standard"
+        )
+        # Assign counselors in round-robin over the planned capacity
+        planner_df["Assigned_Counselor"] = [
+            f"Counselor_{(i % num_counselors) + 1}" for i in range(len(planner_df))
+        ]
+        # Mark which students fit within this week's capacity
+        planner_df["Week_Slot"] = [
+            f"Week {i // total_weekly_capacity + 1}" for i in range(len(planner_df))
+        ]
+
+        ic1, ic2, ic3, ic4 = st.columns(4)
+        with ic1:
+            metric_block("Total weekly capacity", f"{total_weekly_capacity}")
+        with ic2:
+            metric_block("Students to contact", f"{len(planner_df):,}")
+        with ic3:
+            weeks_needed = max(1, -(-len(planner_df) // total_weekly_capacity))  # ceil div
+            metric_block("Weeks needed", f"{weeks_needed}")
+        with ic4:
+            urgent_count = int((planner_df["Urgency"] == "URGENT").sum())
+            metric_block("Urgent cases", f"{urgent_count:,}")
+
+        st.markdown("#### Prioritized Contact List")
+        # Show week-1 by default
+        week_options = sorted(planner_df["Week_Slot"].unique().tolist())
+        selected_week = st.selectbox("Select week", options=week_options)
+        week_df = planner_df[planner_df["Week_Slot"] == selected_week]
+        st.dataframe(week_df, use_container_width=True, height=360)
+
+        # Counselor workload summary
+        st.markdown("#### Counselor Workload")
+        workload = (
+            planner_df[planner_df["Week_Slot"] == selected_week]
+            .groupby("Assigned_Counselor")
+            .agg(
+                Total=("Student_ID", "count"),
+                Urgent=("Urgency", lambda x: (x == "URGENT").sum()),
+                Avg_Risk=("risk_score", "mean"),
+            )
+            .reset_index()
+        )
+        workload["Avg_Risk"] = workload["Avg_Risk"].round(1)
+        st.dataframe(workload, use_container_width=True)
+
+        # Download assignment sheet
+        assignment_csv = planner_df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="Download full assignment sheet (CSV)",
+            data=assignment_csv,
+            file_name="intervention_assignment_sheet.csv",
+            mime="text/csv",
+        )
+    else:
+        st.warning("No students match current filters.")
+
+# ── Tab 5: Program Impact ───────────────────────────────────────────
+with tabs[4]:
+    st.subheader("Program Impact")
+    st.caption("Leadership-level view: projected outreach impact before acting.")
+
+    if len(filtered):
+        # Use the selected mode threshold
+        active_threshold = float(mode_view.get("threshold", metrics.get("threshold", 0.5)))
+        flagged = filtered[filtered["dropout_probability"] >= active_threshold]
+        not_flagged = filtered[filtered["dropout_probability"] < active_threshold]
+
+        total_flagged = len(flagged)
+        total_not_flagged = len(not_flagged)
+        high_in_flagged = int((flagged["burnout_risk_level"] == "High").sum())
+        high_total = int((filtered["burnout_risk_level"] == "High").sum())
+        high_capture = (high_in_flagged / high_total * 100.0) if high_total else 0.0
+
+        # False-positive estimate: flagged but NOT actually High risk
+        fp_count = total_flagged - high_in_flagged
+        fp_rate = (fp_count / total_flagged * 100.0) if total_flagged else 0.0
+
+        pi1, pi2, pi3, pi4 = st.columns(4)
+        with pi1:
+            metric_block("Students contacted", f"{total_flagged:,}")
+        with pi2:
+            metric_block("High-risk captured", f"{high_in_flagged:,} / {high_total:,}")
+        with pi3:
+            metric_block("High-risk capture %", f"{high_capture:.1f}%")
+        with pi4:
+            metric_block("False-positive load", f"{fp_count:,} ({fp_rate:.1f}%)")
+
+        pi5, pi6, pi7 = st.columns(3)
+        with pi5:
+            metric_block("Active threshold", f"{active_threshold:.4f}")
+        with pi6:
+            metric_block("Flagged rate", f"{total_flagged / len(filtered) * 100.0:.1f}%")
+        with pi7:
+            metric_block("Students NOT flagged", f"{total_not_flagged:,}")
+
+        # Workload by strategy type
+        st.markdown("#### Workload by Intervention Strategy")
+        if total_flagged:
+            strategy_work = (
+                flagged["recommended_intervention_strategy"]
+                .fillna("Unassigned")
+                .value_counts()
+                .reset_index()
+            )
+            strategy_work.columns = ["Strategy", "Students"]
+            strategy_work["Share %"] = (strategy_work["Students"] / strategy_work["Students"].sum() * 100.0).round(1)
+            fig_workload = px.bar(
+                strategy_work,
+                x="Students",
+                y="Strategy",
+                orientation="h",
+                text="Students",
+                color="Share %",
+                color_continuous_scale="Reds",
+            )
+            fig_workload.update_layout(yaxis={"categoryorder": "total ascending"}, height=400)
+            st.plotly_chart(fig_workload, use_container_width=True)
+            st.dataframe(strategy_work, use_container_width=True)
+        else:
+            st.info("No students flagged at the current threshold.")
+
+        # Impact efficiency summary
+        st.markdown("#### Impact Efficiency")
+        st.info(
+            f"At threshold **{active_threshold:.4f}** ({mode} mode), contacting "
+            f"**{total_flagged:,}** students ({total_flagged / len(filtered) * 100.0:.1f}% of cohort) "
+            f"captures **{high_capture:.1f}%** of high-risk students. "
+            f"Approximately **{fp_count:,}** contacts ({fp_rate:.1f}%) are false positives — "
+            f"students who are flagged but not high-risk."
+        )
+    else:
+        st.warning("No students match current filters.")
+
+# ── Tab 6: Cohort Insights ──────────────────────────────────────────
+with tabs[5]:
+    st.subheader("Cohort Insights")
+    st.caption("Identify where risk concentrates across cohort dimensions.")
+
+    cohort_src = load_cohort_data()
+    if cohort_src is not None:
+        cohort_df = filtered.merge(cohort_src, on="Student_ID", how="left")
+    else:
+        cohort_df = filtered.copy()
+
+    cohort_dimensions = [c for c in ["Department", "Semester", "Gender", "Part_Time_Job"] if c in cohort_df.columns]
+
+    if not cohort_dimensions:
+        st.warning(
+            "No cohort dimension columns found. Place `student_dropout_dataset_v3.csv` in the `data/` folder "
+            "for department, semester, gender, and job-status breakdowns."
+        )
+    elif len(cohort_df) == 0:
+        st.info("No rows after filtering.")
+    else:
+        selected_dim = st.selectbox("Cohort dimension", options=cohort_dimensions)
+
+        # 1) Risk Level distribution stacked bar
+        st.markdown(f"#### Risk Level Distribution by {selected_dim}")
+        level_by_dim = (
+            cohort_df.groupby([selected_dim, "burnout_risk_level"])
+            .size()
+            .reset_index(name="Count")
+        )
+        fig_stacked = px.bar(
+            level_by_dim,
+            x=selected_dim,
+            y="Count",
+            color="burnout_risk_level",
+            barmode="stack",
+            color_discrete_map={"High": "#e74c3c", "Medium": "#f39c12", "Low": "#2ecc71"},
+        )
+        fig_stacked.update_layout(xaxis_title=selected_dim, yaxis_title="Students")
+        st.plotly_chart(fig_stacked, use_container_width=True)
+
+        # 2) Average risk score heatmap
+        st.markdown(f"#### Average Risk Score by {selected_dim}")
+        avg_risk = (
+            cohort_df.groupby(selected_dim)["risk_score"]
+            .mean()
+            .round(1)
+            .reset_index()
+        )
+        avg_risk.columns = [selected_dim, "Avg Risk Score"]
+        avg_risk = avg_risk.sort_values("Avg Risk Score", ascending=False)
+        fig_heat = px.bar(
+            avg_risk,
+            x=selected_dim,
+            y="Avg Risk Score",
+            color="Avg Risk Score",
+            color_continuous_scale="YlOrRd",
+            text="Avg Risk Score",
+        )
+        fig_heat.update_traces(textposition="outside")
+        fig_heat.update_layout(xaxis_title=selected_dim)
+        st.plotly_chart(fig_heat, use_container_width=True)
+
+        # 3) High-risk rate by dimension
+        st.markdown(f"#### High-risk Rate by {selected_dim}")
+        dim_summary = (
+            cohort_df.groupby(selected_dim)
+            .agg(
+                Total=("Student_ID", "count"),
+                High=("burnout_risk_level", lambda x: (x == "High").sum()),
+                Avg_Risk=("risk_score", "mean"),
+            )
+            .reset_index()
+        )
+        dim_summary["High_Rate_%"] = (dim_summary["High"] / dim_summary["Total"] * 100.0).round(1)
+        dim_summary["Avg_Risk"] = dim_summary["Avg_Risk"].round(1)
+        dim_summary = dim_summary.sort_values("High_Rate_%", ascending=False)
+        fig_hr = px.bar(
+            dim_summary,
+            x=selected_dim,
+            y="High_Rate_%",
+            text="High_Rate_%",
+            color="High_Rate_%",
+            color_continuous_scale="Reds",
+        )
+        fig_hr.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
+        fig_hr.update_layout(xaxis_title=selected_dim, yaxis_title="High-risk rate (%)")
+        st.plotly_chart(fig_hr, use_container_width=True)
+
+        # 4) Summary table
+        st.markdown(f"#### Summary Table — {selected_dim}")
+        st.dataframe(dim_summary, use_container_width=True)
+
+        # 5) If two dimensions available, show cross-tab heatmap
+        if len(cohort_dimensions) >= 2:
+            st.markdown("#### Cross-Dimension Heatmap (Avg Risk Score)")
+            dim_a, dim_b = cohort_dimensions[0], cohort_dimensions[1]
+            cross_dim_selector = st.columns(2)
+            with cross_dim_selector[0]:
+                dim_a = st.selectbox("Row dimension", cohort_dimensions, index=0, key="heatmap_row")
+            with cross_dim_selector[1]:
+                remaining = [d for d in cohort_dimensions if d != dim_a]
+                dim_b = st.selectbox("Column dimension", remaining, index=0, key="heatmap_col")
+
+            pivot = cohort_df.pivot_table(
+                values="risk_score", index=dim_a, columns=dim_b, aggfunc="mean"
+            ).round(1)
+            fig_heatmap = px.imshow(
+                pivot,
+                text_auto=".1f",
+                color_continuous_scale="YlOrRd",
+                labels={"color": "Avg Risk Score"},
+                aspect="auto",
+            )
+            fig_heatmap.update_layout(height=500)
+            st.plotly_chart(fig_heatmap, use_container_width=True)
 
 st.caption(
     "Modes: balanced for general evaluation; high_recall to maximize intervention catch rate with more false positives."

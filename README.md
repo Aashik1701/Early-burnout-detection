@@ -337,3 +337,6 @@ streamlit run dashboard/app.py
 - Action queue table with intervention recommendations
 - Filtered queue CSV download
 - Student-level drilldown view
+- **Intervention Planner** — counselor capacity, weekly contact slots, round-robin assignment, prioritized list by urgency, downloadable assignment sheet
+- **Program Impact** — expected students contacted, high-risk capture estimate, false-positive load at selected threshold, workload by strategy type, impact efficiency summary
+- **Cohort Insights** — stacked bars for risk level distribution, average risk score, and high-risk rate by department/semester/gender/job status, cross-dimension heatmap

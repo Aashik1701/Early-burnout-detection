@@ -305,3 +305,31 @@ If this repository is used in competition or academic review, include:
 - engineered feature rationale,
 - model selection rationale,
 - ethics and intervention safeguards.
+
+---
+
+## 16. Frontend Dashboard (Streamlit)
+
+The project includes a lightweight frontend dashboard at `dashboard/app.py` that reads:
+
+- `artifacts/predictions.csv`
+- `artifacts/metrics.json`
+
+### Run
+
+```bash
+python scripts/train_model.py
+streamlit run dashboard/app.py
+```
+
+### Dashboard Features
+
+- KPI cards (students, high-risk count, average risk score, recall by mode)
+- Mode toggle (`balanced` vs `high_recall`)
+- Urgent-only intervention filter and outreach capacity planner
+- Risk-level distribution and risk-score histogram
+- Top behavioural triggers chart
+- Intervention strategy mix visualization
+- Action queue table with intervention recommendations
+- Filtered queue CSV download
+- Student-level drilldown view

@@ -1,0 +1,479 @@
+DECISION TREE #MINE
+
+###############################
+# DECISION TREE – FULL SCRIPT
+###############################
+
+# Load libraries (install once manually if not installed)
+library(rpart)
+library(rpart.plot)
+
+###############################
+# 1. DATASET
+###############################
+data <- data.frame(
+  Age = c(22, 25, 28, 32, 35, 40, 45, 48),
+  Income = c(25, 30, 40, 45, 50, 60, 55, 65),
+  Credit = c(650, 700, 720, 680, 750, 800, 600, 620),
+  Buy = c(0, 0, 1, 1, 1, 1, 0, 0)
+)
+
+###############################
+# 2. MANUAL GINI CALCULATION
+###############################
+
+calc_gini <- function(labels) {
+  if (length(labels) == 0) return(0)
+  p1 <- sum(labels == 1) / length(labels)
+  p0 <- sum(labels == 0) / length(labels)
+  return(1 - (p1^2 + p0^2))
+}
+
+features <- list(
+  Age = data$Age,
+  Income = data$Income,
+  Credit = data$Credit
+)
+
+best_gini <- 1
+best_split <- list()
+
+for (name in names(features)) {
+  
+  vals <- features[[name]]
+  unique_vals <- sort(unique(vals))
+  thresholds <- (unique_vals[-length(unique_vals)] + unique_vals[-1]) / 2
+  
+  for (t in thresholds) {
+    
+    left <- data$Buy[vals <= t]
+    right <- data$Buy[vals > t]
+    
+    g_left <- calc_gini(left)
+    g_right <- calc_gini(right)
+    
+    weighted_gini <- (length(left)/nrow(data))*g_left +
+                     (length(right)/nrow(data))*g_right
+    
+    cat(sprintf("Feature: %s | Threshold: %.1f | Gini: %.3f\n",
+                name, t, weighted_gini))
+    
+    if (weighted_gini < best_gini) {
+      best_gini <- weighted_gini
+      best_split <- list(
+        feature = name,
+        threshold = t,
+        left = left,
+        right = right
+      )
+    }
+  }
+}
+
+cat("\n--- BEST FIRST SPLIT ---\n")
+cat("Feature:", best_split$feature,
+    "| Threshold:", best_split$threshold, "\n")
+
+check_purity <- function(node) {
+  if (calc_gini(node) == 0) "Pure" else "Impure"
+}
+
+cat("Left Node:",
+    paste(best_split$left, collapse = ","),
+    "-", check_purity(best_split$left), "\n")
+
+cat("Right Node:",
+    paste(best_split$right, collapse = ","),
+    "-", check_purity(best_split$right), "\n")
+
+###############################
+# 3. RPART DECISION TREE
+###############################
+
+# Convert Buy to factor for classification
+data$Buy <- as.factor(data$Buy)
+
+model <- rpart(
+  Buy ~ Age + Income + Credit,
+  data = data,
+  method = "class",
+  control = rpart.control(
+    cp = 0,
+    minsplit = 2,
+    minbucket = 1
+  )
+)
+
+cat("\n--- RPART TREE SUMMARY ---\n")
+print(model)
+
+###############################
+# 4. TREE VISUALIZATION
+###############################
+
+rpart.plot(
+  model,
+  type = 2,
+  extra = 104,
+  fallen.leaves = TRUE,
+  main = "Decision Tree"
+)
+
+DECISION TREE #SMI
+
+# 1. Dataset Setup
+age <- c(22, 25, 28, 32, 35, 40, 45, 48)
+income <- c(25, 30, 40, 45, 50, 60, 55, 65)
+credit <- c(650, 700, 720, 680, 750, 800, 600, 620)
+buy <- c(0, 0, 1, 1, 1, 1, 0, 0) # 0=No, 1=Yes
+
+# 2. Manual Gini Function
+calc_gini <- function(labels) {
+  if (length(labels) == 0) return(0)
+  p1 <- sum(labels == 1) / length(labels)
+  p0 <- sum(labels == 0) / length(labels)
+  return(1 - (p1^2 + p0^2))
+}
+
+# 3. Iterate Features to find Best Split
+features <- list(Age=age, Income=income, Credit=credit)
+best_gini <- 1
+best_split <- list()
+
+for (name in names(features)) {
+  vals <- features[[name]]
+  thresholds <- (sort(unique(vals))[-length(unique(vals))] + sort(unique(vals))[-1]) / 2
+  
+  for (t in thresholds) {
+    left <- buy[vals <= t]
+    right <- buy[vals > t]
+    
+    g_left <- calc_gini(left)
+    g_right <- calc_gini(right)
+    weighted_gini <- (length(left)/8)*g_left + (length(right)/8)*g_right
+    
+    cat(sprintf("Feature: %s | Threshold: %.1f | Gini: %.3f\n", name, t, weighted_gini))
+    
+    if (weighted_gini < best_gini) {
+      best_gini <- weighted_gini
+      best_split <- list(feature=name, threshold=t, left=left, right=right)
+    }
+  }
+}
+
+# 4. First Split Results
+cat("\n--- BEST FIRST SPLIT ---\n")
+cat("Feature:", best_split$feature, "| Threshold:", best_split$threshold, "\n")
+
+# 5. Check Purity
+check_purity <- function(node) {
+  gini <- calc_gini(node)
+  if (gini == 0) return("Pure") else return("Impure")
+}
+
+cat("Left Node:", paste(best_split$left, collapse=","), "-", check_purity(best_split$left), "\n")
+cat("Right Node:", paste(best_split$right, collapse=","), "-", check_purity(best_split$right), "\n")
+
+###### --- LINEAR REGRESSION --- ######
+
+data(cars)
+
+x <- cars$speed
+y <- cars$dist
+
+n <- length(y)
+
+mean_x <- sum(x) / n
+mean_y <- sum(y) / n
+
+cat(sprintf("Number of observations (n): %d\n", n))
+cat(sprintf("Mean of X (speed): %.2f\n", mean_x))
+cat(sprintf("Mean of Y (dist): %.2f\n", mean_y))
+
+
+cat(sprintf("Sum of Y (dist): %.2f\n", sum(y)))
+cat(sprintf("Square root of sum of Y: %.4f\n", sqrt(sum(y))))
+
+
+Sxy <- sum((x - mean_x) * (y - mean_y))
+Sxx <- sum((x - mean_x)^2)
+
+# Coefficients
+m_slope <- Sxy / Sxx
+c_intercept <- mean_y - m_slope * mean_x
+
+cat(sprintf("Calculated Slope (m): %.4f\n", m_slope))
+cat(sprintf("Calculated Intercept (c): %.4f\n", c_intercept))
+y_pred <- c_intercept + m_slope * x
+residuals <- y - y_pred
+print(residuals)
+# Error metrics
+mae <- sum(abs(residuals)) / n
+mse <- sum(residuals^2) / n
+rmse <- sqrt(mse)
+sum_of_res <- sum(residuals)
+
+cat(sprintf("Mean Absolute Error (MAE): %.2f\n", mae))
+cat(sprintf("Mean Squared Error (MSE): %.2f\n", mse))
+cat(sprintf("Root Mean Squared Error (RMSE): %.2f\n", rmse))
+cat(sprintf("Sum of Residuals: %.4e\n", sum_of_res))
+# TSS
+tss <- sum((y - mean_y)^2)
+
+# SSE
+sse <- sum(residuals^2)
+
+# R-squared
+r_squared <- 1 - (sse / tss)
+
+cat(sprintf("Total Sum of Squares (TSS): %.4f\n", tss))
+cat(sprintf("R-squared (R²): %.4f\n", r_squared))
+# Residual variance
+se_squared <- sum(residuals^2) / (n - 2)
+
+# Standard Error for slope (m)
+se_m <- sqrt(se_squared / Sxx)
+
+# Standard Error for intercept (c)
+se_c <- sqrt(se_squared * (1/n + mean_x^2 / Sxx))
+
+cat(sprintf("Standard Error for Intercept (c): %.4f\n", se_c))
+cat(sprintf("Standard Error for Slope (m): %.4f\n", se_m))
+# Load dataset
+data(cars)
+
+linearreg <- lm(dist ~ speed, data = cars)
+
+intercept_val <- linearreg$coefficients["(Intercept)"]
+slope_val <- linearreg$coefficients["speed"]
+
+cat(sprintf("Intercept (c): %.2f\n", intercept_val))
+cat(sprintf("Slope (m): %.2f\n", slope_val))
+
+print(coef(linearreg))
+
+ANOVA
+
+# -----------------------------------------
+# ONE WAY ANOVA
+# -----------------------------------------
+
+# Dataset
+A <- c(7, 9, 10, 12)
+B <- c(10, 15, 9, 12)
+C <- c(7, 8, 4, 3)
+
+# -----------------------------
+# DIRECT METHOD USING aov()
+# -----------------------------
+values <- c(A, B, C)
+
+groups <- factor(c(rep("A", length(A)),
+                   rep("B", length(B)),
+                   rep("C", length(C))))
+
+df <- data.frame(values, groups)
+
+anova_model <- aov(values ~ groups, data = df)
+
+cat("One Way ANOVA using aov():\n")
+print(summary(anova_model))
+
+cat("\nTukey Post Hoc Test:\n")
+print(TukeyHSD(anova_model))
+
+
+# -----------------------------
+# MANUAL CALCULATION METHOD
+# -----------------------------
+
+all_data <- c(A, B, C)
+grand_mean <- mean(all_data)
+
+k <- 3                    # number of groups
+N <- length(all_data)     # total observations
+
+# Total Sum of Squares
+SST <- sum((all_data - grand_mean)^2)
+
+# Sum of Squares Between
+SSB <- length(A)*(mean(A)-grand_mean)^2 +
+       length(B)*(mean(B)-grand_mean)^2 +
+       length(C)*(mean(C)-grand_mean)^2
+
+# Sum of Squares Within (Error)
+SSE <- sum((A - mean(A))^2) +
+       sum((B - mean(B))^2) +
+       sum((C - mean(C))^2)
+
+# Degrees of Freedom
+df_between <- k - 1
+df_within <- N - k
+df_total <- N - 1
+
+# Mean Squares
+MSB <- SSB / df_between
+MSE <- SSE / df_within
+
+# F Statistic
+F_value <- MSB / MSE
+
+# p-value
+p_value <- pf(F_value, df_between, df_within, lower.tail = FALSE)
+
+# Display Results
+cat("\nManual ANOVA Results:\n")
+cat("SST =", SST, "\n")
+cat("SSB =", SSB, "\n")
+cat("SSE =", SSE, "\n")
+cat("MSB =", MSB, "\n")
+cat("MSE =", MSE, "\n")
+cat("F-value =", F_value, "\n")
+cat("p-value =", p_value, "\n")
+
+# Decision
+alpha <- 0.05
+
+if(p_value < alpha){
+  cat("Decision: Reject H0\n")
+  cat("Conclusion: Significant difference among group means\n")
+} else {
+  cat("Decision: Fail to Reject H0\n")
+  cat("Conclusion: No significant difference among group means\n")
+}
+# -------------------------------------------------------
+# TWO WAY ANOVA (Manual + Direct Method)
+# Soil (A/B) and Fertilizer (X/Y/Z)
+# -------------------------------------------------------
+
+# Dataset
+
+# Soil A
+A_X <- c(5.1, 5.3, 5.0)
+A_Y <- c(3.7, 3.9, 3.8)
+A_Z <- c(2.6, 2.7, 2.5)
+
+# Soil B
+B_X <- c(4.8, 5.0, 4.9)
+B_Y <- c(3.4, 3.5, 3.6)
+B_Z <- c(4.8, 3.5, 2.2)
+
+data <- c(A_X, A_Y, A_Z, B_X, B_Y, B_Z)
+
+# -------------------------------------------------------
+# MANUAL METHOD
+# -------------------------------------------------------
+
+# Cell Means
+mean_AX <- mean(A_X); mean_AY <- mean(A_Y); mean_AZ <- mean(A_Z)
+mean_BX <- mean(B_X); mean_BY <- mean(B_Y); mean_BZ <- mean(B_Z)
+
+# Factor Means
+mean_A <- mean(c(mean_AX, mean_AY, mean_AZ))
+mean_B <- mean(c(mean_BX, mean_BY, mean_BZ))
+
+mean_X <- mean(c(mean_AX, mean_BX))
+mean_Y <- mean(c(mean_AY, mean_BY))
+mean_Z <- mean(c(mean_AZ, mean_BZ))
+
+grand_mean <- mean(data)
+
+a <- 2   # soil levels
+b <- 3   # fertilizer levels
+n <- 3   # replications
+
+# Sum of Squares
+SS_Total <- sum((data - grand_mean)^2)
+
+SS_A <- b*n*sum((c(mean_A, mean_B) - grand_mean)^2)
+SS_B <- a*n*sum((c(mean_X, mean_Y, mean_Z) - grand_mean)^2)
+
+SS_AB <- n*sum(c(
+  (mean_AX - mean_A - mean_X + grand_mean)^2,
+  (mean_AY - mean_A - mean_Y + grand_mean)^2,
+  (mean_AZ - mean_A - mean_Z + grand_mean)^2,
+  (mean_BX - mean_B - mean_X + grand_mean)^2,
+  (mean_BY - mean_B - mean_Y + grand_mean)^2,
+  (mean_BZ - mean_B - mean_Z + grand_mean)^2
+))
+
+SS_E <- SS_Total - SS_A - SS_B - SS_AB
+
+# Degrees of Freedom
+df_A <- a - 1
+df_B <- b - 1
+df_AB <- (a - 1)*(b - 1)
+df_E <- a*b*(n - 1)
+df_T <- length(data) - 1
+
+# Mean Squares
+MS_A <- SS_A/df_A
+MS_B <- SS_B/df_B
+MS_AB <- SS_AB/df_AB
+MS_E <- SS_E/df_E
+
+# F Values
+F_A <- MS_A/MS_E
+F_B <- MS_B/MS_E
+F_AB <- MS_AB/MS_E
+
+# Print ANOVA Table
+cat("\nManual Two Way ANOVA Table:\n")
+cat(sprintf("%-12s %8s %4s %8s %8s\n", "Source", "SS", "df", "MS", "F"))
+cat(sprintf("%-12s %8.4f %4.0f %8.4f %8.4f\n", "Soil", SS_A, df_A, MS_A, F_A))
+cat(sprintf("%-12s %8.4f %4.0f %8.4f %8.4f\n", "Fertilizer", SS_B, df_B, MS_B, F_B))
+cat(sprintf("%-12s %8.4f %4.0f %8.4f %8.4f\n", "Interaction", SS_AB, df_AB, MS_AB, F_AB))
+cat(sprintf("%-12s %8.4f %4.0f %8.4f %8s\n", "Error", SS_E, df_E, MS_E, "NA"))
+cat(sprintf("%-12s %8.4f %4.0f %8s %8s\n", "Total", SS_Total, df_T, "NA", "NA"))
+
+# -------------------------------------------------------
+# DIRECT METHOD USING aov()
+# -------------------------------------------------------
+
+soil_factor <- factor(rep(c("A", "B"), each = 9))
+fert_factor <- factor(rep(rep(c("X","Y","Z"), each = 3), 2))
+
+direct_model <- aov(data ~ soil_factor * fert_factor)
+
+cat("\nTwo Way ANOVA using aov():\n")
+print(summary(direct_model))
+
+
+# -------------------------------------------------------
+# HYPOTHESIS TESTING (α = 0.05)
+# -------------------------------------------------------
+
+alpha <- 0.05
+
+p_A <- 1 - pf(F_A, df_A, df_E)
+p_B <- 1 - pf(F_B, df_B, df_E)
+p_AB <- 1 - pf(F_AB, df_AB, df_E)
+
+cat("\nHypothesis Decisions:\n")
+
+cat("Soil p-value =", p_A, "\n")
+cat("Fertilizer p-value =", p_B, "\n")
+cat("Interaction p-value =", p_AB, "\n")
+
+if(p_A < alpha){
+  cat("Soil Effect: Significant\n")
+} else {
+  cat("Soil Effect: Not Significant\n")
+}
+
+if(p_B < alpha){
+  cat("Fertilizer Effect: Significant\n")
+} else {
+  cat("Fertilizer Effect: Not Significant\n")
+}
+
+if(p_AB < alpha){
+  cat("Interaction Effect: Significant\n")
+} else {
+  cat("Interaction Effect: Not Significant\n")
+}
+
+
+
+
+

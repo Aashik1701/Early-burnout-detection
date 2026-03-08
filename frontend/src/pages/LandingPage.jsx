@@ -7,7 +7,7 @@ const FadeInSection = ({ children, delay = 0, className = '' }) => (
     <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, margin: "-50px" }} // Reduced margin to trigger slightly earlier, smoother flow
         transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
         className={className}
     >
@@ -24,10 +24,17 @@ export function LandingPage({ enterDashboard }) {
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
+        let ticking = false;
         const handleScroll = () => {
-            setScrolled(window.scrollY > 50);
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    setScrolled(window.scrollY > 50);
+                    ticking = false;
+                });
+                ticking = true;
+            }
         };
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true }); // Passive listener for better perf
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 

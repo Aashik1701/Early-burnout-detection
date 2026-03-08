@@ -1,14 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, Brain, Zap, ShieldCheck, Activity, Users, LayoutDashboard, Database, Server, Component, GlassesIcon, Book } from 'lucide-react';
+import { ArrowRight, Zap, ShieldCheck, Activity, LayoutDashboard, Database, Server, Component, Book, BarChart3 } from 'lucide-react';
 
 // Reusable animated section wrapper
 const FadeInSection = ({ children, delay = 0, className = '' }) => (
     <motion.div
-        initial={{ opacity: 0, y: 50 }}
+        initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.8, delay, ease: [0.21, 0.47, 0.32, 0.98] }}
+        transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
         className={className}
     >
         {children}
@@ -17,259 +17,268 @@ const FadeInSection = ({ children, delay = 0, className = '' }) => (
 
 export function LandingPage({ enterDashboard }) {
     const { scrollYProgress } = useScroll();
-    const heroOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0]);
-    const heroY = useTransform(scrollYProgress, [0, 0.1], [0, 100]);
+    const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+    const heroY = useTransform(scrollYProgress, [0, 0.2], [0, 50]);
+    const dashboardY = useTransform(scrollYProgress, [0, 0.2], [20, -50]); // Parallax lift
+
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 50);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     return (
         <div className="landing-container">
-            {/* Ambient Background Orbs */}
+            {/* Global Background Layers */}
             <div className="ambient-orb orb-1" />
             <div className="ambient-orb orb-2" />
             <div className="ambient-orb orb-3" />
+            <div className="bg-grid" />
+            <div className="bg-noise" />
 
             {/* Sticky Navigation */}
-            <nav className="landing-nav">
+            <nav className={`landing-nav ${scrolled ? 'scrolled' : ''}`}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Book size={28} color="var(--accent-blue)" />
-                    <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Sentinal Ai</span>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Book size={18} color="#fff" />
+                    </div>
+                    <span style={{ fontSize: '1rem', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Sentinel AI</span>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button
-                        onClick={() => window.open('https://sentinel-ai-analytics.streamlit.app/', '_blank')}
-                        style={{
-                            color: 'var(--text-secondary)',
-                            fontWeight: 600,
-                            padding: '0.5rem 1rem',
-                            borderRadius: 'var(--radius-full)',
-                            border: '1px solid var(--border-light)',
-                            backdropFilter: 'blur(10px)',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
-                    >
-                        Streamlit
+                    <button className="btn-secondary" onClick={() => window.open('https://sentinel-ai-analytics.streamlit.app/', '_blank')}>
+                        Legacy App
                     </button>
-                    <button
-                        onClick={enterDashboard}
-                        style={{
-                            color: 'var(--text-primary)',
-                            fontWeight: 600,
-                            padding: '0.5rem 1rem',
-                            borderRadius: 'var(--radius-full)',
-                            border: '1px solid var(--border-light)',
-                            backdropFilter: 'blur(10px)',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-                    >
-                        Open App
+                    <button className="btn-primary" onClick={enterDashboard}>
+                        Enter Platform
                     </button>
                 </div>
             </nav>
 
             {/* 1. HERO SECTION */}
-            <motion.section
-                className="landing-section"
-                style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', opacity: heroOpacity, y: heroY }}
-            >
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 1, ease: 'easeOut' }}
-                >
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', border: '1px solid var(--accent-purple)', backgroundColor: 'var(--accent-purple-mute)', marginBottom: '2rem', color: 'var(--accent-purple)', fontWeight: 600, fontSize: '0.875rem' }}>
-                        <span style={{ position: 'relative', display: 'flex', width: '8px', height: '8px' }}>
-                            <span style={{ animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite', position: 'absolute', display: 'inline-flex', height: '100%', width: '100%', borderRadius: '50%', backgroundColor: 'var(--accent-purple)', opacity: 0.75 }}></span>
-                            <span style={{ position: 'relative', display: 'inline-flex', borderRadius: '50%', height: '8px', width: '8px', backgroundColor: 'var(--accent-purple)' }}></span>
+            <section style={{ position: 'relative', paddingTop: '14rem', paddingBottom: '6rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', zIndex: 10 }}>
+                <motion.div style={{ opacity: heroOpacity, y: heroY, padding: '0 2rem' }}>
+
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '0.35rem 0.75rem', borderRadius: 'var(--radius-full)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', marginBottom: '2rem', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 500, backdropFilter: 'blur(10px)' }}
+                    >
+                        <span style={{ position: 'relative', display: 'flex', width: '6px', height: '6px' }}>
+                            <span style={{ animation: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite', position: 'absolute', height: '100%', width: '100%', borderRadius: '50%', background: 'var(--accent-blue)', opacity: 0.75 }}></span>
+                            <span style={{ position: 'relative', borderRadius: '50%', height: '6px', width: '6px', background: 'var(--accent-blue)' }}></span>
                         </span>
-                        Student Burnout Detection v2.0
+                        BehAnalytics v2.0 is now live
+                    </motion.div>
+
+                    <motion.h1
+                        className="hero-title"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                        Predict Dropout.<br />
+                        <span className="text-gradient">Protect Futures.</span>
+                    </motion.h1>
+
+                    <motion.p
+                        style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto 3rem auto' }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                        An intelligent decision-support engine. Leverage behavioral data and Random Forest predictions to identify high-risk students weeks before they fail.
+                    </motion.p>
+
+                    <motion.div
+                        style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                        <button className="btn-primary" onClick={enterDashboard} style={{ padding: '0.75rem 2rem' }}>
+                            Launch Dashboard <ArrowRight size={16} />
+                        </button>
+                    </motion.div>
+                </motion.div>
+
+                {/* Floating Dashboard Preview (Parallax) */}
+                <motion.div
+                    style={{ y: dashboardY, marginTop: '5rem', width: '100%', maxWidth: '1000px', padding: '0 2rem' }}
+                    initial={{ opacity: 0, y: 100 }}
+                    animate={{ opacity: 1, y: 20 }}
+                    transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                >
+                    <div className="glass-panel" style={{ width: '100%', height: '400px', position: 'relative', overflow: 'hidden' }}>
+                        {/* Mock Header */}
+                        <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-light)', display: 'flex', gap: '8px' }}>
+                            <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f56' }} />
+                            <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ffbd2e' }} />
+                            <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#27c93f' }} />
+                        </div>
+                        {/* Mock Content */}
+                        <div style={{ display: 'flex', height: 'calc(100% - 49px)' }}>
+                            <div style={{ width: '200px', borderRight: '1px solid var(--border-light)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div style={{ height: 20, width: '80%', background: 'rgba(255,255,255,0.05)', borderRadius: 4 }} />
+                                <div style={{ height: 20, width: '60%', background: 'rgba(255,255,255,0.05)', borderRadius: 4 }} />
+                                <div style={{ height: 20, width: '70%', background: 'rgba(255,255,255,0.05)', borderRadius: 4 }} />
+                            </div>
+                            <div style={{ flex: 1, padding: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} style={{ flex: 1, height: 100, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)', borderRadius: 8 }} />
+                                    ))}
+                                </div>
+                                <div style={{ flex: 1, background: 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%)', border: '1px solid var(--border-light)', borderRadius: 8, borderBottom: 'none' }} />
+                            </div>
+                        </div>
+                        {/* Glow Underlay */}
+                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '60%', height: '60%', background: 'var(--accent-blue)', filter: 'blur(100px)', opacity: 0.1, zIndex: -1 }} />
+                    </div>
+                </motion.div>
+            </section>
+
+            <div className="glowing-divider" />
+
+            {/* 2. WHAT IT SOLVES (Minimal Numbers) */}
+            <section className="landing-section">
+                <FadeInSection>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '4rem' }}>
+                        <div className="tech-badge" style={{ marginBottom: '1rem' }}>The Reality</div>
+                        <h2 className="section-title">Reactive <span style={{ color: 'var(--text-muted)' }}>vs</span> Proactive</h2>
+                        <p style={{ textAlign: 'center', color: 'var(--text-secondary)', maxWidth: '600px' }}>
+                            Waiting for students to fail exams is too late. We process behavioral meta-data to flag risk up to 6 weeks before traditional academic indicators trigger.
+                        </p>
                     </div>
 
-                    <h1 className="hero-title">
-                        Predict Dropout Risk.<br />
-                        <span className="text-gradient">Before It Happens.</span>
-                    </h1>
-
-                    <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto 3rem auto', lineHeight: 1.8 }}>
-                        An AI decision-support platform for universities. Leverage behavioral data and Random Forest predictions to drastically increase student retention through targeted human intervention.
-                    </p>
-
-                    <button className="btn-primary" onClick={enterDashboard}>
-                        Launch Dashboard <ArrowRight size={20} />
-                    </button>
-                </motion.div>
-            </motion.section>
-
-            {/* 2. WHAT IT SOLVES (Problem) */}
-            <section className="landing-section" style={{ borderTop: '1px solid var(--border-strong)', background: 'linear-gradient(180deg, rgba(10,12,16,0) 0%, rgba(59,130,246,0.03) 100%)' }}>
-                <FadeInSection>
-                    <h2 className="section-title">The <span className="text-gradient-accent">Crisis</span></h2>
-                    <p style={{ textAlign: 'center', fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '800px', margin: '0 auto 4rem auto' }}>
-                        Nearly 30% of first-year college students drop out before their sophomore year. The standard approach of waiting for students to fail exams is reactive and often too late. We need a proactive paradigm.
-                    </p>
-
-                    <div className="bento-grid">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
                         {[
-                            { stat: "30%", title: "First-Year Attrition", desc: "National average dropout rate before sophomore year." },
-                            { stat: "Reactive", title: "Current Stigma", desc: "Institutions only act after irreparable academic damage is done." },
-                            { stat: "< 5%", title: "Resource Constraint", desc: "Counselors can only engage with a fraction of the student body." }
+                            { stat: "30%", title: "Attrition Rate", desc: "First-year students drop out before their sophomore year." },
+                            { stat: "Weeks", title: "Lag Time", desc: "Average delay in identifying struggling students conventionally." },
+                            { stat: "1:400", title: "Ratio", desc: "Counselor to student ratio limits manual tracking capability." }
                         ].map((item, i) => (
                             <motion.div
-                                key={i} className="bento-card" style={{ textAlign: 'center' }}
-                                whileHover={{ y: -10 }}
+                                key={i}
+                                style={{ borderLeft: '1px solid var(--border-strong)', paddingLeft: '1.5rem' }}
+                                whileHover={{ x: 5 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
-                                <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--accent-blue)', marginBottom: '1rem' }}>{item.stat}</div>
-                                <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{item.title}</h3>
-                                <p style={{ color: 'var(--text-secondary)' }}>{item.desc}</p>
+                                <div style={{ fontSize: '3.5rem', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.05em', lineHeight: 1 }}>{item.stat}</div>
+                                <h3 style={{ fontSize: '1rem', marginTop: '1rem', marginBottom: '0.25rem', color: 'var(--text-primary)' }}>{item.title}</h3>
+                                <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{item.desc}</p>
                             </motion.div>
                         ))}
                     </div>
                 </FadeInSection>
             </section>
 
-            {/* 3. FEATURES & SOLUTIONS */}
+            <div className="glowing-divider" />
+
+            {/* 3. SYNTHESIS (Features Grid) */}
             <section className="landing-section">
                 <FadeInSection>
-                    <h2 className="section-title">A Symphony of <span className="text-gradient">Intelligence</span></h2>
-                    <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '4rem', fontSize: '1.25rem' }}>
-                        Turn behavioral metadata into actionable counselor interventions.
-                    </p>
+                    <div style={{ marginBottom: '4rem' }}>
+                        <div className="tech-badge" style={{ marginBottom: '1rem' }}>capabilities</div>
+                        <h2 className="section-title">Engineered for intervention.</h2>
+                    </div>
 
                     <div className="bento-grid">
-                        <div className="bento-card" style={{ gridColumn: '1 / -1', background: 'linear-gradient(135deg, rgba(24,29,38,0.8), rgba(59,130,246,0.1))' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                                <div style={{ flex: 1 }}>
-                                    <div className="bento-icon-wrapper"><Activity color="var(--accent-blue)" size={28} /></div>
-                                    <h3 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Predictive Burnout Modeling</h3>
-                                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.125rem', lineHeight: 1.6 }}>
-                                        Our Random Forest classifier analyzes LMS engagement, demographic markers, and academic disengagement indicators to generate a highly calibrated probability score of dropout risk, achieving 94% ROC-AUC.
-                                    </p>
-                                </div>
-                                <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                                    {/* Mock Diagram */}
-                                    <div style={{ width: '100%', maxWidth: '400px', height: '200px', background: 'rgba(0,0,0,0.5)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-strong)', position: 'relative', overflow: 'hidden' }}>
-                                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(0deg, var(--accent-blue) 0%, transparent 100%)', opacity: 0.2 }} />
-                                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: '100%', height: '100%', position: 'absolute' }}>
-                                            <path d="M0,80 Q25,20 50,60 T100,20 L100,100 L0,100 Z" fill="rgba(59,130,246,0.2)" stroke="var(--accent-blue)" strokeWidth="2" />
-                                        </svg>
-                                    </div>
-                                </div>
+                        <div className="bento-card" style={{ gridColumn: '1 / -1' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '600px' }}>
+                                <Activity size={24} color="var(--text-primary)" />
+                                <h3 style={{ fontSize: '1.5rem' }}>Predictive Burnout Modeling</h3>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
+                                    Utilizes a trained Scikit-Learn Random Forest classifier deployed via lightweight CSV payloads to the client. Achieves 94% ROC-AUC without server-side compute overhead.
+                                </p>
+                            </div>
+                            <div style={{ position: 'absolute', right: '2rem', top: '2rem', opacity: 0.1 }}>
+                                <BarChart3 size={200} strokeWidth={1} />
                             </div>
                         </div>
 
                         <div className="bento-card">
-                            <div className="bento-icon-wrapper"><LayoutDashboard color="var(--accent-purple)" size={28} /></div>
-                            <h3>Action Queue Tracking</h3>
-                            <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
-                                A prioritized, sortable tabular interface that instantly bubbles the most at-risk students to the top for immediate review.
+                            <LayoutDashboard size={20} color="var(--accent-blue)" style={{ marginBottom: '1.5rem' }} />
+                            <h3 style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>Action Queue</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                                Prioritized, sortable tabular views instantly bubble the most at-risk students to the top for immediate review.
                             </p>
                         </div>
 
                         <div className="bento-card">
-                            <div className="bento-icon-wrapper"><ShieldCheck color="var(--accent-teal)" size={28} /></div>
-                            <h3>Automated Thresholding</h3>
-                            <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
-                                Adjustable precision/recall evaluation modes allow administrative staff to fine-tune the flag rate based on current workforce capacity.
+                            <ShieldCheck size={20} color="var(--accent-purple)" style={{ marginBottom: '1.5rem' }} />
+                            <h3 style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>Thresholding</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                                Adjustable precision/recall controls allow staff to fine-tune the flag rate based on workforce capacity.
                             </p>
                         </div>
 
                         <div className="bento-card">
-                            <div className="bento-icon-wrapper"><Zap color="#f59e0b" size={28} /></div>
-                            <h3>Intervention Planner</h3>
-                            <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
-                                Automatically distribute highest-risk student cases across available counselors in weekly scheduling slots.
+                            <Zap size={20} color="#f5a623" style={{ marginBottom: '1.5rem' }} />
+                            <h3 style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>Intervention OS</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                                Distribute high-risk student cases across available counselors via automated weekly scheduling.
                             </p>
                         </div>
                     </div>
                 </FadeInSection>
             </section>
 
-            {/* 4. TECHNICAL ARCHITECTURE & PIPELINE */}
-            <section className="landing-section" style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 0, left: '50%', width: '100vw', transform: 'translateX(-50%)', height: '1px', background: 'linear-gradient(90deg, transparent, var(--border-strong), transparent)' }} />
+            <div className="glowing-divider" />
+
+            {/* 4. TECHNICAL PIPELINE */}
+            <section className="landing-section">
                 <FadeInSection>
-                    <h2 className="section-title">Technical <span className="text-gradient">Architecture</span></h2>
-                    <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '4rem' }}>
-                        A meticulously engineered pipeline from raw data to proactive intervention.
-                    </p>
+                    <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+                        <div className="tech-badge" style={{ marginBottom: '1rem' }}>Stack</div>
+                        <h2 className="section-title">Zero-latency architecture.</h2>
+                    </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem', maxWidth: '900px', margin: '0 auto' }}>
-
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', alignItems: 'center' }}>
-                            <div className="architecture-node" style={{ width: '200px' }}>
-                                <Database color="var(--text-muted)" size={32} style={{ margin: '0 auto 1rem auto' }} />
-                                <h4>LMS Datasets</h4>
-                                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>student_dropout_v3.csv</p>
-                            </div>
-
-                            <div style={{ height: '2px', width: '50px', background: 'var(--border-strong)' }} />
-
-                            <div className="architecture-node" style={{ width: '200px', borderColor: 'var(--accent-purple)', boxShadow: '0 0 20px rgba(139,92,246,0.2)' }}>
-                                <Server color="var(--accent-purple)" size={32} style={{ margin: '0 auto 1rem auto' }} />
-                                <h4>Python Backend</h4>
-                                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Scikit-Learn Random Forest</p>
-                            </div>
-
-                            <div style={{ height: '2px', width: '50px', background: 'var(--border-strong)' }} />
-
-                            <div className="architecture-node" style={{ width: '200px', borderColor: 'var(--accent-blue)', boxShadow: '0 0 20px rgba(59,130,246,0.2)' }}>
-                                <Component color="var(--accent-blue)" size={32} style={{ margin: '0 auto 1rem auto' }} />
-                                <h4>React Frontend</h4>
-                                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Vite + Framer Motion</p>
-                            </div>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '3rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div className="architecture-node" style={{ width: '220px' }}>
+                            <Database color="var(--text-muted)" size={24} style={{ margin: '0 auto 1rem auto' }} />
+                            <h4 style={{ fontSize: '0.875rem', marginBottom: '0.25rem' }}>Static Datasets</h4>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>CSV Artifacts</p>
                         </div>
 
-                        {/* Pipeline Flow */}
-                        <div style={{ background: 'rgba(24,29,38,0.5)', borderRadius: 'var(--radius-lg)', padding: '3rem', border: '1px solid var(--border-light)' }}>
-                            <h3 style={{ marginBottom: '2rem', textAlign: 'center' }}>Inference Pipeline</h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', position: 'relative' }}>
-                                <div style={{ position: 'absolute', top: '10px', bottom: '10px', left: '24px', width: '2px', background: 'var(--border-strong)' }} />
+                        <div style={{ height: '1px', width: '30px', background: 'var(--border-strong)' }} />
 
-                                {[
-                                    { title: '1. Data Ingestion', desc: 'Client-side ingestion of static CSV artifacts using PapaParse.' },
-                                    { title: '2. Probability Mapping', desc: 'Merging real-time cohort metadata with pre-computed calibration scores.' },
-                                    { title: '3. Threshold Evaluation', desc: 'Applying operating thresholds (e.g. 0.52) to flag High-Risk students.' },
-                                    { title: '4. Action Generation', desc: 'Rendering tailored UI cards and automated counseling schedules.' }
-                                ].map((step, i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        whileInView={{ opacity: 1, x: 0 }}
-                                        viewport={{ once: true }}
-                                        transition={{ delay: i * 0.2 }}
-                                        style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', position: 'relative', zIndex: 2 }}
-                                    >
-                                        <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'var(--bg-card)', border: '2px solid var(--accent-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{i + 1}</div>
-                                        <div style={{ paddingTop: '10px' }}>
-                                            <h4 style={{ fontSize: '1.125rem', marginBottom: '0.25rem' }}>{step.title}</h4>
-                                            <p style={{ color: 'var(--text-secondary)' }}>{step.desc}</p>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
+                        <div className="architecture-node" style={{ width: '220px' }}>
+                            <Server color="var(--text-muted)" size={24} style={{ margin: '0 auto 1rem auto' }} />
+                            <h4 style={{ fontSize: '0.875rem', marginBottom: '0.25rem' }}>Model Weights</h4>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>Random Forest Output</p>
                         </div>
 
+                        <div style={{ height: '1px', width: '30px', background: 'var(--border-strong)' }} />
+
+                        <div className="architecture-node" style={{ width: '220px', borderColor: 'var(--border-light)', background: 'rgba(255,255,255,0.03)' }}>
+                            <Component color="var(--text-primary)" size={24} style={{ margin: '0 auto 1rem auto' }} />
+                            <h4 style={{ fontSize: '0.875rem', marginBottom: '0.25rem', color: 'var(--text-primary)' }}>React Edge</h4>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>Vite + PapaParse</p>
+                        </div>
                     </div>
                 </FadeInSection>
             </section>
 
+            <div className="glowing-divider" />
 
             {/* 5. USE CASES */}
             <section className="landing-section" style={{ paddingBottom: '12rem' }}>
                 <FadeInSection>
-                    <h2 className="section-title">Designed for <span className="text-gradient">Impact</span></h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem', marginTop: '4rem' }}>
+                    <h2 className="section-title">Scale your impact.</h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem', marginTop: '3rem' }}>
                         {[
-                            { role: "Academic Advisors", focus: "Micro", desc: "Instantly know which students to contact today and what intervention strategies to employ based on specific behavioural triggers." },
+                            { role: "Academic Advisors", focus: "Micro", desc: "Identify which students to contact today and what cognitive intervention strategies to employ based on behavioural triggers." },
                             { role: "Department Heads", focus: "Meso", desc: "Track high-risk rates across specific semesters and majors to identify systemic curriculum issues using Cohort Insights." },
-                            { role: "University Leadership", focus: "Macro", desc: "View high-level funnel aggregations and false-positive loads to justify and scale counseling resource budgets." }
+                            { role: "University Leadership", focus: "Macro", desc: "View high-level funnel aggregations and operational loads to justify and scale strategic counseling budgets." }
                         ].map((uc, i) => (
-                            <div key={i} style={{ padding: '2rem', borderTop: '2px solid var(--accent-blue)', background: 'rgba(255,255,255,0.02)' }}>
-                                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent-blue)', marginBottom: '1rem' }}>{uc.focus} Scale</div>
-                                <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>{uc.role}</h3>
-                                <p style={{ color: 'var(--text-secondary)' }}>{uc.desc}</p>
+                            <div key={i} style={{ padding: '2rem 2rem 2rem 0', borderTop: '1px solid var(--border-strong)' }}>
+                                <div className="tech-badge" style={{ marginBottom: '1rem', background: 'transparent' }}>{uc.focus}</div>
+                                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>{uc.role}</h3>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{uc.desc}</p>
                             </div>
                         ))}
                     </div>
@@ -277,8 +286,9 @@ export function LandingPage({ enterDashboard }) {
             </section>
 
             {/* FOOTER */}
-            <footer style={{ padding: '2rem', textAlign: 'center', borderTop: '1px solid var(--border-strong)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                &copy; 2026 BehAnalytics. Developed for the Early Burnout Detection Initiative.
+            <footer style={{ padding: '2rem', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-light)', color: 'var(--text-muted)', fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace' }}>
+                <span>&copy; 2026 Sentinel AI.</span>
+                <span>SYSTEM STATUS: NORMAL</span>
             </footer>
         </div>
     );
